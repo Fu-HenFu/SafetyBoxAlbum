@@ -2,7 +2,7 @@
 //  main.m
 //  SafetyBoxAlbum
 //
-//  Created by 李晓东 on 2025/1/12.
+//  Created by 李晓东 on 2025/1/12Ô.
 //
 
 #import <UIKit/UIKit.h>

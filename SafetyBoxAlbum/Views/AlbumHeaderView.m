@@ -18,7 +18,6 @@
     self = [super initWithFrame:frame];
     if (self) {
         self.titleLabel = [[UILabel alloc] initWithFrame:self.bounds];
-        //        self.titleLabel.autoresizingMask = UIViewAutoresizingMaskFlexibleWidth | UIViewAutoresizingMaskFlexibleHeight;
         self.titleLabel.textAlignment = NSTextAlignmentCenter;
         [self addSubview:self.titleLabel];
     }

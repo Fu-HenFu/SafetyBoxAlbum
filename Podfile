@@ -7,6 +7,8 @@ target 'SafetyBoxAlbum' do
   pod 'AFNetworking', '~> 4.0.1'
   pod 'Masonry', '~> 1.1.0'
   pod 'FMDB', '~> 2.7.12'
+  pod 'SDWebImage', '~> 5.20.0'
+  pod 'JLDualCircularProgressView', '~> 1.0'
   # Pods for SafetyBoxAlbum
 
   target 'SafetyBoxAlbumTests' do

@@ -8,6 +8,10 @@
 #import <UIKit/UIKit.h>
 #import <Photos/Photos.h>
 
-@interface AlbumSettingViewController : UIViewController <UIImagePickerControllerDelegate, UICollectionViewDataSource, UICollectionViewDelegate>
+#import "LGPhoto/Classes/LGPhoto.h"
+
+@interface AlbumSettingViewController : UIViewController <UIImagePickerControllerDelegate, UICollectionViewDataSource, UICollectionViewDelegate, LGPhotoPickerViewControllerDelegate,LGPhotoPickerBrowserViewControllerDataSource,LGPhotoPickerBrowserViewControllerDelegate>
+
+
 
 @end

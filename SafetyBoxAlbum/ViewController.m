@@ -79,12 +79,13 @@ static NSString* const kCellConstant = @"CollectiveItem";
     // 目标尺寸（根据需要调整）
     CGSize targetSize = CGSizeMake(30, 30); // 例如，20x20 像素
     
-    UIButton *settingsButton=[UIButton buttonWithType:UIButtonTypeCustom];
+    UIButton *settingsButton = [UIButton buttonWithType:UIButtonTypeCustom];
     // 创建缩放后的图片
     UIImage *scaledImage = [self image:settingsImage resizedToSize:targetSize];
     settingsButton.frame = CGRectMake(0, 0, targetSize.width, targetSize.height); // 设置按钮大小
     [settingsButton.imageView setContentMode:UIViewContentModeScaleAspectFill];
     
+    [settingsButton setImage:scaledImage forState:UIControlStateNormal];
     
     // 确保图片在按钮中居中
     [settingsButton setContentVerticalAlignment:UIControlContentVerticalAlignmentCenter];
@@ -353,9 +354,9 @@ static NSString* const kCellConstant = @"CollectiveItem";
     // 处理点击事件
 }
 
-- (void)showAlbumClick:(TAlbumCollectionViewCell *)cell didTapButton:(UILabel *)label {
+- (void)showAlbumClick:(TAlbumCollectionViewCell *)cell didTapButton:(NSString *)albumName {
     AlbumSettingViewController *controller = [[AlbumSettingViewController alloc]init];
-    controller.navigationItem.title = label.text;
+    controller.navigationItem.title = albumName;
     controller.modalPresentationStyle = UIModalPresentationFullScreen;
     [self.navigationController pushViewController:controller animated:YES];
     

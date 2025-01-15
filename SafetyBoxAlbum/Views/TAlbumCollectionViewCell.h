@@ -13,7 +13,7 @@
 
 - (void)myCustomCollectionViewCell:(UICollectionViewCell *)cell didTapButton:(UIImageView *)imageView;
 
-- (void)showAlbumClick:(UICollectionViewCell *)cell didTapButton:(UILabel *)label;
+- (void)showAlbumClick:(UICollectionViewCell *)cell didTapButton:(NSString *)albumName;
 - (void)showAlbumToosClick:(UICollectionViewCell *)cell;
 
 @end

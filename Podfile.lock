@@ -14,29 +14,43 @@ PODS:
   - AFNetworking/Serialization (4.0.1)
   - AFNetworking/UIKit (4.0.1):
     - AFNetworking/NSURLSession
+  - DACircularProgress (2.3.1)
   - FMDB (2.7.12):
     - FMDB/standard (= 2.7.12)
   - FMDB/Core (2.7.12)
   - FMDB/standard (2.7.12):
     - FMDB/Core
+  - JLDualCircularProgressView (1.0):
+    - DACircularProgress
   - Masonry (1.1.0)
+  - SDWebImage (5.20.0):
+    - SDWebImage/Core (= 5.20.0)
+  - SDWebImage/Core (5.20.0)
 
 DEPENDENCIES:
   - AFNetworking (~> 4.0.1)
   - FMDB (~> 2.7.12)
+  - JLDualCircularProgressView (~> 1.0)
   - Masonry (~> 1.1.0)
+  - SDWebImage (~> 5.20.0)
 
 SPEC REPOS:
   trunk:
     - AFNetworking
+    - DACircularProgress
     - FMDB
+    - JLDualCircularProgressView
     - Masonry
+    - SDWebImage
 
 SPEC CHECKSUMS:
   AFNetworking: 3bd23d814e976cd148d7d44c3ab78017b744cd58
+  DACircularProgress: 4dd437c0fc3da5161cb289e07ac449493d41db71
   FMDB: 728731dd336af3936ce00f91d9d8495f5718a0e6
+  JLDualCircularProgressView: f98543f3d8aea84f4ae732ec3fe66a1955ca706f
   Masonry: 678fab65091a9290e40e2832a55e7ab731aad201
+  SDWebImage: 73c6079366fea25fa4bb9640d5fb58f0893facd8
 
-PODFILE CHECKSUM: e17595293ab01a585d55dadcc9923fc430cef688
+PODFILE CHECKSUM: 29787b7c7cd14f74660587f3c98b86b2a2540bb4
 
 COCOAPODS: 1.16.2

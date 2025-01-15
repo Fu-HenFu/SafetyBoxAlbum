@@ -38,7 +38,7 @@
 
 
     self.iconImageView.userInteractionEnabled = YES;
-    UITapGestureRecognizer *tapGestureRecognize = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(imageViewTapped:)];
+    UITapGestureRecognizer *tapGestureRecognize = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(labelTapped:)];
     [self.iconImageView addGestureRecognizer:tapGestureRecognize];
     
     self.iconImageView.contentMode = UIViewContentModeScaleAspectFit;
@@ -104,6 +104,10 @@
     
 }
 
+- (void)imageViewTapped:(UITapGestureRecognizer *)gestureRecognizer {
+    
+}
+
 - (void)labelTapped:(nonnull UITapGestureRecognizer *)gestureRecognizer {
     // 调用代理方法
     if ([self.delegate respondsToSelector:@selector(showAlbumClick:didTapButton:)]) {
@@ -111,7 +115,8 @@
         if ([triggeringView isKindOfClass:[UIImageView class]]) {
             UIImageView *imageView = (UIImageView *)triggeringView;
         }
-        [self.delegate showAlbumClick:self didTapButton:triggeringView];
+        NSString *albumName = self.titleLabel.text;
+        [self.delegate showAlbumClick:self didTapButton:albumName];
     }
 }
 

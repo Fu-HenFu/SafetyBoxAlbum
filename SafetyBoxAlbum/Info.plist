@@ -6,5 +6,7 @@
 	<string>Use access your photo library</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Use your camera</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>use you camera</string>
 </dict>
 </plist>

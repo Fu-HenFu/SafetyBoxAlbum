@@ -18,7 +18,7 @@
 #import "SettingViewController.h"
 #import "TAlbumCollectionViewCell.h"
 
-@interface ViewController : UICollectionViewController <UICollectionViewDelegateFlowLayout, UIImagePickerControllerDelegate, UINavigationControllerDelegate>
+@interface ViewController : UICollectionViewController <UICollectionViewDelegateFlowLayout, UIImagePickerControllerDelegate, UINavigationControllerDelegate, AlbumClickDelegate>
 @property (strong, nonatomic) UIToolbar *toolBar2;
 @property (strong, nonatomic) UIBarButtonItem *barButtonItem;
 
