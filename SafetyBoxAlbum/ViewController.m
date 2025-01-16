@@ -26,7 +26,10 @@ static NSString* const kCellConstant = @"CollectiveItem";
     layout.minimumInteritemSpacing = 5;
     layout.minimumLineSpacing = 30;
     
+    
     self.storage = [TStorage shareStorage];
+
+    self.dataArray = [NSMutableArray arrayWithArray:[self.storage queryAlbum:1]];
     if (self = [super initWithCollectionViewLayout:layout]) {
         
     }
@@ -107,7 +110,7 @@ static NSString* const kCellConstant = @"CollectiveItem";
     self.collectionView.dataSource = self;
     // 初始化数据数组（这里只是示例，你可以根据实际情况来初始化数据）
     //    self.dataArray = @[@"Item 1", @"Item 2", @"Item 3", @"Item 4", @"Item 5", @"Item 6", @"Item 7", @"Item 8", @"Item 9", @"Item 10", /* ... 更多数据 ... */];
-    self.dataArray = [NSMutableArray arrayWithArray: @[@"主相册", @"回收站"]];
+
     
     // 注册默认cell的类（如果它们是自定义的）
     [self.collectionView registerClass:[TAlbumCollectionViewCell class] forCellWithReuseIdentifier:@"MainAlbum"];
@@ -229,10 +232,7 @@ static NSString* const kCellConstant = @"CollectiveItem";
     
     self.toolBar2.centerButtonFeatureEnabled = YES;
     [self changeCenterButtonWithPaw:YES];
-    
-    //    NSArray *items = @[self.barButtonItem];
-    //    [self.toolBar2 setItems:items animated:NO];
-    
+
     
 }
 
@@ -246,21 +246,6 @@ static NSString* const kCellConstant = @"CollectiveItem";
 
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath {
     
-    //CGFloat screenWidth = [UIScreen mainScreen].bounds.size.width;
-    //CGFloat minCellWidth = screenWidth * 0.2; // 设置最小宽度为屏幕宽度的30%
-    //CGFloat maxCellWidth = screenWidth * 0.4; // 设置最大宽度为屏幕宽度的50%
-    //
-    //// 假设我们希望cell的宽度是屏幕宽度的40%，但不超过最大宽度，不小于最小宽度
-    //CGFloat cellWidth = screenWidth * 0.3;
-    //cellWidth = MIN(cellWidth, maxCellWidth);
-    //cellWidth = MAX(cellWidth, minCellWidth);
-    //
-    //// 高度可以根据需要设置，这里假设高度是固定值
-    //CGFloat cellHeight = cellWidth * 1.2;
-    //
-    //return CGSizeMake(cellWidth, cellHeight);
-    
-    
     // 根据屏幕的宽度来计算cell的大小
     CGFloat screenWidth = self.view.frame.size.width;
     // 例如，每个cell占据屏幕宽度的一半，高度为100
@@ -269,12 +254,14 @@ static NSString* const kCellConstant = @"CollectiveItem";
 
 - (__kindof UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath
 {
-    
+    TAlbumObject *albumObject = nil;
     if (indexPath.item == 0) {
         TAlbumCollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"MainAlbum" forIndexPath:indexPath];
         // 配置默认cell 1
         // 配置单元格的属性，包括传入自定义值
-        cell.albumName = @"主相册";
+        albumObject = [self.dataArray objectAtIndex:indexPath.item];
+        cell.albumName = albumObject.name;
+        cell.albumId = albumObject.id;
         // 其他配置代码
         cell.titleLabel.text = cell.albumName;
         cell.delegate = self;
@@ -284,7 +271,9 @@ static NSString* const kCellConstant = @"CollectiveItem";
         TAlbumCollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"Trash" forIndexPath:indexPath];
         // 配置默认cell 2
         // 配置单元格的属性，包括传入自定义值
-        cell.albumName = @"回收站";
+        
+        albumObject = [self.dataArray objectAtIndex:indexPath.item];
+        cell.albumName = albumObject.name;
         
         // 其他配置代码
         cell.titleLabel.text = cell.albumName;
@@ -294,10 +283,12 @@ static NSString* const kCellConstant = @"CollectiveItem";
     } else {
         TAlbumCollectionViewCell* cell = [collectionView dequeueReusableCellWithReuseIdentifier:kCellConstant forIndexPath:indexPath];
         // 配置单元格的属性，包括传入自定义值
-        cell.albumName = [self.dataArray objectAtIndex:indexPath.item];
         
+        albumObject = [self.dataArray objectAtIndex:indexPath.item];
+        cell.albumName = albumObject.name;
+        cell.albumId = albumObject.id;
         // 其他配置代码
-        cell.titleLabel.text = self.dataArray[indexPath.item];
+        cell.titleLabel.text = albumObject.name;
         cell.delegate = self;
         
         return cell;
@@ -355,7 +346,8 @@ static NSString* const kCellConstant = @"CollectiveItem";
 }
 
 - (void)showAlbumClick:(TAlbumCollectionViewCell *)cell didTapButton:(NSString *)albumName {
-    AlbumSettingViewController *controller = [[AlbumSettingViewController alloc]init];
+    AlbumSettingViewController *controller = [[AlbumSettingViewController alloc]initWithAlbumId:cell.albumId andAlbumName:cell.albumName];
+//    [controller albumInfo:cell.albumId andAlbumName:cell.albumName];
     controller.navigationItem.title = albumName;
     controller.modalPresentationStyle = UIModalPresentationFullScreen;
     [self.navigationController pushViewController:controller animated:YES];
@@ -389,7 +381,9 @@ static NSString* const kCellConstant = @"CollectiveItem";
     }
 }
 
-////
+/**
+ 按钮事件,新建相册
+ */
 - (void)albumTapped:(id)sender {
     // 创建并配置UIAlertController
     UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"新建相册" message:@"请输入相册名" preferredStyle:UIAlertControllerStyleAlert];
@@ -425,13 +419,14 @@ static NSString* const kCellConstant = @"CollectiveItem";
     
     TAlbumObject *albumObj = [self.storage getLastestAlbumResultSet];
     NSString *name = albumObj.name;
-    [self.dataArray insertObject:name atIndex:1];
+    NSInteger dataArrayCount = [self.dataArray count];
+    [self.dataArray insertObject:albumObj atIndex:dataArrayCount - 1];
     // 使用performBatchUpdates:completion:来进行局部更新
     @try {
         // 使用performBatchUpdates:completion:来进行局部更新
         [self.collectionView performBatchUpdates:^{
             // 插入新的cell
-            NSIndexPath *newIndexPath = [NSIndexPath indexPathForItem:1 inSection:0];
+            NSIndexPath *newIndexPath = [NSIndexPath indexPathForItem:dataArrayCount - 1 inSection:0];
             [self.collectionView insertItemsAtIndexPaths:@[newIndexPath]];
             
         } completion:nil];

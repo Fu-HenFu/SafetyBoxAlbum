@@ -34,6 +34,9 @@
                     BOOL fakeFlag =[db executeUpdate:createFakeAlbumSQL];
                     BOOL pictureFlag =[db executeUpdate:createPictureSQL];
                     BOOL employerFlag =[db executeUpdate:createEmployerSQL];
+                    [db executeUpdate:@"INSERT INTO t_album (name, state, type) VALUES ('主相册', 1, 1)"];
+                    [db executeUpdate:@"INSERT INTO t_album (name, state, type) VALUES ('回收站', 1, 2)"];
+                    
 //                    // 执行升级操作
 //                    BOOL success = [db executeUpdate:@"ALTER TABLE users ADD COLUMN email TEXT"];
 //                    if (!success) {

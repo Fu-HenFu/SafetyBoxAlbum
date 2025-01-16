@@ -11,6 +11,9 @@
 #import "TImageCollectionViewCell.h"
 #import "TCreatePhotoView.h"
 #import "TDeleteView.h"
+#import "TPictureAudioObject.h"
+#import "GlobalDefine.h"
+#import "TStorage.h"
 
 @interface AlbumSettingViewController ()
 
@@ -18,7 +21,7 @@
 @property (strong, nonatomic) TCreatePhotoView *createItemView;
 @property (strong, nonatomic) UICollectionView *collectionView;
 @property (strong, nonatomic) UIImagePickerController *imagePickerController;
-@property (strong, nonatomic) NSMutableArray *dataArray;
+@property (strong, nonatomic) NSMutableArray<TPictureAudioObject *> *dataArray;
 @property (strong, nonatomic) NSMutableArray *originImageArray;
 @property (strong, nonatomic) NSMutableArray *fullResolutionImage;
 @property (assign, nonatomic) CGFloat screenWidth;
@@ -31,22 +34,44 @@
 
 @property (nonatomic, strong) NSMutableArray *assetsArray;
 @property (nonatomic, strong) NSMutableArray *imageUrlArray;
+@property (nonatomic, assign) NSInteger albumId;
+@property (nonatomic, strong) NSString *albumName;
+
+
+@property (nonatomic, strong) TStorage *storage;
+@property (nonatomic, strong) NSString *documentsPath;
+
 @end
 
 @implementation AlbumSettingViewController
 
+- (instancetype)initWithAlbumId:(NSInteger)albumId andAlbumName:(NSString *)albumName
+{
+    self = [super init];
+    if (self) {
+        // 初始化数据列表
+        self.dataArray = [NSMutableArray array];
+        self.originImageArray = [NSMutableArray array];
+        self.fullResolutionImage = [NSMutableArray array];
+        self.albumId = albumId;
+        self.albumName = albumName;
+        self.storage = [TStorage shareStorage];
+        [self.dataArray addObjectsFromArray:[self.storage queryPicture:USEFUL_STATE_TYPE andAlbumId:self.albumId]];
+
+    }
+    return self;
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
+    
+
     // Do any additional setup after loading the view.
     [self.view setBackgroundColor:[UIColor whiteColor]];
     
     self.screenWidth = [UIScreen mainScreen].bounds.size.width;
     self.screenHeight = [UIScreen mainScreen].bounds.size.height;
     
-    // 初始化数据列表
-    self.dataArray = [NSMutableArray array];
-    self.originImageArray = [NSMutableArray array];
-    self.fullResolutionImage = [NSMutableArray array];
     
     // 初始化 UICollectionViewFlowLayout
     UICollectionViewFlowLayout *layout = [[UICollectionViewFlowLayout alloc] init];
@@ -170,9 +195,7 @@
 - (void)selectPhoto:(id)sender {
     
     [self presentPhotoPickerViewControllerWithStyle:LGShowImageTypeImagePicker];
-//    self.imagePickerController.sourceType = UIImagePickerControllerSourceTypePhotoLibrary; // 设置来源为相册
-//    
-//    [self presentViewController:self.imagePickerController animated:YES completion:nil];
+
 }
 
 /**
@@ -192,6 +215,10 @@
     }
 }
 
+- (NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView {
+    return 1;
+}
+
 
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
     return self.dataArray.count;
@@ -201,17 +228,30 @@
     TImageCollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"cellIdentifier" forIndexPath:indexPath];
     
     // 设置单元格的图片
-    NSString *imageName = self.dataArray[indexPath.item];
-    cell.imageView.image = self.dataArray[indexPath.item];//[UIImage imageNamed:imageName];
-    // 设置单元格内容
-//    cell.backgroundColor = [UIColor lightGrayColor];
-//    UILabel *label = [[UILabel alloc] initWithFrame:cell.bounds];
-//    label.textAlignment = NSTextAlignmentCenter;
-//    label.text = self.dataArray[indexPath.row];
-//    [cell.contentView addSubview:label];
+    NSString *imageName = [self.dataArray[indexPath.item] name];
     
+    if (imageName) {
+        NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+        NSString *documentsDirectory = [paths firstObject];
+        NSString *filePath = [documentsDirectory stringByAppendingPathComponent:imageName];
+        
+        
+        UIImage *cellImage = [UIImage imageNamed:filePath];
+        cell.imageView.image = cellImage;//self.dataArray[indexPath.item];
+        
+//        NSData *fileData = [NSData dataWithContentsOfFile:filePath];
+//        if (fileData) {
+//            NSString *fileContent = [[NSString alloc] initWithData:fileData encoding:NSUTF8StringEncoding];
+//            NSLog(@"File content: %@", fileContent);
+//        }
+    }
+    
+    
+    
+
     return cell;
 }
+// 
 
 #pragma mark - UICollectionViewDelegate 方法
 
@@ -313,26 +353,52 @@
     NSArray *selectedArr = userInfo[@"selectAssets"];
     NSUInteger insertIndex = 0;
     NSMutableArray *tempDataArray = [NSMutableArray array];
-    for (LGPhotoAssets *photo in selectedArr) {
+//    for (LGPhotoAssets *photo in selectedArr) {
+//        PHAsset *phasset = [PHAsset fetchAssetsWithALAssetURLs:@[photo.assetURL] options:nil].firstObject;
+//        NSString *imgIdentifier = @"";
+//        if (phasset) {
+//            
+//            imgIdentifier = [NSString stringWithFormat:@"%@.PNG", [phasset.localIdentifier stringByReplacingOccurrencesOfString:@"/" withString:@"_"]];
+//            
+//            NSString *imagePath = [self.documentsPath stringByAppendingPathComponent: imgIdentifier];
+//            NSData *imageData = UIImagePNGRepresentation(photo.originImage); // 或者使用 UIImageJPEGRepresentation
+//            BOOL flag = [imageData writeToFile:imagePath atomically:YES];
+//            //  照片转存成功
+//            if (flag) {
+//                TPictureAudioObject *pictureObject = [[TPictureAudioObject alloc]init];
+//                [pictureObject setName:imgIdentifier];
+//                [pictureObject setPath:imagePath];
+//                [pictureObject setType: PICTURE_TYPE];
+//                [pictureObject setState: USEFUL_STATE_TYPE];
+//                [pictureObject setAlbumName: self.albumName];
+//                [pictureObject setAlbumId: self.albumId];
+//                [self.dataArray addObject:pictureObject];
+//                
+//                [tempDataArray addObject:pictureObject];
+//            }
+//            
+//            NSLog(@" ImagePath %@", imagePath);
+//        }
+        
         //缩略图
-        [tempDataArray addObject:photo.thumbImage];
-        [self.dataArray addObject:photo.thumbImage];
+//        [tempDataArray addObject:photo.thumbImage];
+//        [self.dataArray addObject:photo.thumbImage];
         //原图
-        [self.originImageArray addObject:photo.originImage];
+//        [self.originImageArray addObject:photo.originImage];
         //全屏图
 //        [self.fullResolutionImage addObject:photo.fullResolutionImage];
-    }
+//    }
     
-    [self.collectionView performBatchUpdates:^{
-        NSMutableArray *indexPaths = [NSMutableArray array];
-        for (NSUInteger i = 0; i < tempDataArray.count; i++) {
-            [indexPaths addObject:[NSIndexPath indexPathForItem:insertIndex + i inSection:0]];
-        }
-        [self.collectionView insertItemsAtIndexPaths:indexPaths];
-
-    } completion:^(BOOL finished) {
-        
-    }];
+//    [self.collectionView performBatchUpdates:^{
+//        NSMutableArray *indexPaths = [NSMutableArray array];
+//        for (NSUInteger i = 0; i < tempDataArray.count; i++) {
+//            [indexPaths addObject:[NSIndexPath indexPathForItem:insertIndex + i inSection:0]];
+//        }
+//        [self.collectionView insertItemsAtIndexPaths:indexPaths];
+//
+//    } completion:^(BOOL finished) {
+//        
+//    }];
 
 }
 
@@ -357,17 +423,11 @@
     
     UIImage *image = assets[0].thumbImage;
     NSString *message = @"这是一个自定义提示框！";
-//    TDeleteView *alertView = [[TDeleteView alloc] initWithImage:image message:message];
-//    [alertView.excuteBtn addTarget:self action:@selector(excuteDeleteFromAlbum:) forControlEvents:UIControlEventTouchUpInside];
-//    [alertView.noExcuteBtn addTarget:self action:@selector(noExcuteDeleteFromAlbum:) forControlEvents:UIControlEventTouchUpInside];
-//    [alertView show];
-    
-//    UIAlertView *alertView = [[UIAlertView alloc] initWithTitle:@"发送图片" message:[NSString stringWithFormat:@"您选择了%ld张图片\n是否原图：%@",(long)num,isOriginal] delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil];
-//    [alertView show];
+
 }
 
 /**
- 删除相册中的照片
+ 提示是否删除相册中的照片,并保存照片到本地
  */
 - (void)excuteDeleteFromAlbum:(UIButton *)sender {
     [self translateAlbumIntoAppDir:self.assetsArray withImageInfo: self.imageUrlArray];
@@ -382,16 +442,73 @@
  */
 - (void)translateAlbumIntoAppDir: (NSArray<LGPhotoAssets *> *)selectedImage withImageInfo: (NSArray *)urlArray {
     
+    
+    NSMutableArray *tempDataArray = [NSMutableArray array];
     // 保存照片到沙盒
-    NSString *documentsPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) firstObject];
+    self.documentsPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) firstObject];
+    
+    
     
     for (LGPhotoAssets *asset in selectedImage) {
-        NSString *imagePath = [documentsPath stringByAppendingPathComponent: @"selectedImage.png"];
-        NSData *imageData = UIImagePNGRepresentation(asset.originImage); // 或者使用 UIImageJPEGRepresentation
-        [imageData writeToFile:imagePath atomically:YES];
+        
+        PHAsset *phasset = [PHAsset fetchAssetsWithALAssetURLs:@[asset.assetURL] options:nil].firstObject;
+        NSString *imgIdentifier = @"";
+        if (phasset) {
+            
+            imgIdentifier = [NSString stringWithFormat:@"%@.PNG", [phasset.localIdentifier stringByReplacingOccurrencesOfString:@"/" withString:@"_"]];
+            
+            NSString *imagePath = [self.documentsPath stringByAppendingPathComponent: imgIdentifier];
+            NSData *imageData = UIImagePNGRepresentation(asset.originImage); // 或者使用 UIImageJPEGRepresentation
+            BOOL flag = [imageData writeToFile:imagePath atomically:YES];
+            //  照片转存成功
+            if (flag) {
+                TPictureAudioObject *pictureObject = [[TPictureAudioObject alloc]init];
+                [pictureObject setName:imgIdentifier];
+                [pictureObject setPath:imagePath];
+                [pictureObject setType: PICTURE_TYPE];
+                [pictureObject setState: USEFUL_STATE_TYPE];
+                [pictureObject setAlbumName: self.albumName];
+                [pictureObject setAlbumId: self.albumId];
+                [self addRecordInDB:pictureObject];
+                
+                [tempDataArray addObject:pictureObject];
+                
+            }
+            
+            NSLog(@" ImagePath %@", imagePath);
+        }
         
     }
+    
+    int insertIndex = self.dataArray.count;
+    @try {
+        // 更新数据源
+        [self.dataArray insertObjects:tempDataArray atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(insertIndex, tempDataArray.count)]];
+        [self.collectionView performBatchUpdates:^{
+            NSMutableArray *indexPaths = [NSMutableArray array];
+            for (NSUInteger i = 0; i < tempDataArray.count; i++) {
+                [indexPaths addObject:[NSIndexPath indexPathForItem: insertIndex + i inSection:0]];
+            }
+            [self.collectionView insertItemsAtIndexPaths:indexPaths];
 
+        } completion:^(BOOL finished) {
+            
+        }];
+    } @catch (NSException *exception) {
+        NSLog(@"Exception Occur %@", exception.description);
+    }
+    
+
+}
+
+- (void)addRecordInDB: (TPictureAudioObject *) pictureObject{
+    BOOL flag = [self.storage insertPicture:pictureObject];
+    NSLog(@"insert flag %d", flag);
+}
+
+- (void)albumInfo:(NSInteger)albumId andAlbumName:(NSString *)albumName{
+    self.albumId = albumId;
+    self.albumName = albumName;
 }
 
 

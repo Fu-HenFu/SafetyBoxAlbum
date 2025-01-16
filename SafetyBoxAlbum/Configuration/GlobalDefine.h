@@ -10,3 +10,13 @@
 #define ST_APP_VERSION ([[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleShortVersionString"])
 #define ST_APP_BUILD   ([[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"])
 
+typedef enum : NSUInteger {
+    PICTURE_TYPE = 1,
+    AUDIO_TYPE,
+} PICTURE_AUDIO_TYPE;
+
+typedef enum : NSUInteger {
+    USELESS_STATE_TYPE = 0,
+    USEFUL_STATE_TYPE,
+} STATE_TYPE;
+

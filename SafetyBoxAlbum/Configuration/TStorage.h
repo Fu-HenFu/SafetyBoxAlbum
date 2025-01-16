@@ -6,6 +6,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "TPictureAudioObject.h"
 
 #import "TAlbumObject.h"
 
@@ -15,11 +16,18 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (instancetype)shareStorage;
 - (void)close;
-
+/// 新建相册
 - (void)insertAlbum:(NSString *)albumName;
+- (void)insertAlbum:(NSString *)albumName withType: (NSInteger)type;
 - (void)insertFakeAlbum:(NSString *)albumName;
 
+- (NSArray<TAlbumObject *> *)queryAlbum:(NSInteger)state;
+
 - (TAlbumObject *)getLastestAlbumResultSet;
+
+- (BOOL)insertPicture:(TPictureAudioObject *)obj;
+
+- (NSArray *)queryPicture:(NSInteger)state andAlbumId:(NSInteger)albumId;
 @end
 
 NS_ASSUME_NONNULL_END

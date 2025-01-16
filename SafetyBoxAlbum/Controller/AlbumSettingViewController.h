@@ -12,6 +12,8 @@
 
 @interface AlbumSettingViewController : UIViewController <UIImagePickerControllerDelegate, UICollectionViewDataSource, UICollectionViewDelegate, LGPhotoPickerViewControllerDelegate,LGPhotoPickerBrowserViewControllerDataSource,LGPhotoPickerBrowserViewControllerDelegate>
 
+- (instancetype)initWithAlbumId:(NSInteger)albumId andAlbumName:(NSString *)albumName;
 
+- (void)albumInfo:(NSInteger)albumId andAlbumName:(NSString *)albumName;
 
 @end

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		332840252D37A959008732E7 /* TPictureAudioObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 332840242D37A959008732E7 /* TPictureAudioObject.m */; };
 		338D6B562D35F5B20092589C /* LGPhotoPickerBrowserPhoto.m in Sources */ = {isa = PBXBuildFile; fileRef = 338D6AE42D35F5B20092589C /* LGPhotoPickerBrowserPhoto.m */; };
 		338D6B572D35F5B20092589C /* LGPhotoRect.m in Sources */ = {isa = PBXBuildFile; fileRef = 338D6AE62D35F5B20092589C /* LGPhotoRect.m */; };
 		338D6B582D35F5B20092589C /* LGPhotoPickerBrowserViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 338D6AE92D35F5B20092589C /* LGPhotoPickerBrowserViewController.m */; };
@@ -118,6 +119,8 @@
 		0F5272A926E7BEAC83666E3C /* Pods-SafetyBoxAlbum-SafetyBoxAlbumUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SafetyBoxAlbum-SafetyBoxAlbumUITests.release.xcconfig"; path = "Target Support Files/Pods-SafetyBoxAlbum-SafetyBoxAlbumUITests/Pods-SafetyBoxAlbum-SafetyBoxAlbumUITests.release.xcconfig"; sourceTree = "<group>"; };
 		2923387963A45C949250FF48 /* Pods-SafetyBoxAlbumTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SafetyBoxAlbumTests.debug.xcconfig"; path = "Target Support Files/Pods-SafetyBoxAlbumTests/Pods-SafetyBoxAlbumTests.debug.xcconfig"; sourceTree = "<group>"; };
 		29619D40BE61B01BB2356623 /* Pods-SafetyBoxAlbum.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SafetyBoxAlbum.release.xcconfig"; path = "Target Support Files/Pods-SafetyBoxAlbum/Pods-SafetyBoxAlbum.release.xcconfig"; sourceTree = "<group>"; };
+		332840232D37A959008732E7 /* TPictureAudioObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TPictureAudioObject.h; sourceTree = "<group>"; };
+		332840242D37A959008732E7 /* TPictureAudioObject.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TPictureAudioObject.m; sourceTree = "<group>"; };
 		338D6AE32D35F5B20092589C /* LGPhotoPickerBrowserPhoto.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LGPhotoPickerBrowserPhoto.h; sourceTree = "<group>"; };
 		338D6AE42D35F5B20092589C /* LGPhotoPickerBrowserPhoto.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LGPhotoPickerBrowserPhoto.m; sourceTree = "<group>"; };
 		338D6AE52D35F5B20092589C /* LGPhotoRect.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LGPhotoRect.h; sourceTree = "<group>"; };
@@ -602,6 +605,8 @@
 			children = (
 				33F1B31D2D3399B000FFEFDA /* TAlbumObject.h */,
 				33F1B31E2D3399B000FFEFDA /* TAlbumObject.m */,
+				332840232D37A959008732E7 /* TPictureAudioObject.h */,
+				332840242D37A959008732E7 /* TPictureAudioObject.m */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -939,6 +944,7 @@
 				33F1B2EF2D33902A00FFEFDA /* main.m in Sources */,
 				338D6B622D35F5B20092589C /* LGPhotoPickerGroupViewController.m in Sources */,
 				33F1B2E12D33902800FFEFDA /* ViewController.m in Sources */,
+				332840252D37A959008732E7 /* TPictureAudioObject.m in Sources */,
 				33F1B3342D339CC100FFEFDA /* TAlbumCollectionViewCell.m in Sources */,
 				33F1B31F2D3399B000FFEFDA /* TAlbumObject.m in Sources */,
 				338D6B582D35F5B20092589C /* LGPhotoPickerBrowserViewController.m in Sources */,

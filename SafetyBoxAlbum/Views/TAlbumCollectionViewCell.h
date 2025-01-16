@@ -27,6 +27,7 @@
 @property (nonatomic, strong) UILabel *detailLabel;
 @property (nonatomic, strong) UIButton *moreButton;
 @property (nonatomic, strong) NSString *albumName;
+@property (nonatomic, assign) NSInteger albumId;
 
 - (void)labelTapped:(UITapGestureRecognizer *)gestureRecognizer;
 - (void)imageViewTapped:(UITapGestureRecognizer *)gestureRecognizer;
