@@ -128,7 +128,8 @@ static FMDatabaseQueue *_queue;
     }];
     return [NSArray arrayWithArray:pictureArray];
 }
-
+Your local changes to the following files would be overwritten by checkout:
+    .DS_Store
 /**
  把ResultSet转为TPictureAudioObject对象
  */
