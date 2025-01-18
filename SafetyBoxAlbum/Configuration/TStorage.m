@@ -12,8 +12,10 @@
 #define ROWID @"id"
 #define NAME @"name"
 #define STATE @"state"
+#define PHOTO_COUNT @"photo_count"
 
 #define PATH @"path"
+#define THUMB_PATH @"thumb_path"
 #define TYPE @"type"
 #define ALBUM_NAME @"album_name"
 #define ALBUM_ID @"album_id"
@@ -80,6 +82,16 @@ static FMDatabaseQueue *_queue;
     return [NSArray arrayWithArray:albumArray];
 }
 
+- (BOOL)updateAlbumPhotoCount:(NSInteger)albumId andCount:(NSInteger)photoCount {
+    [_queue inDatabase:^(FMDatabase * _Nonnull db) {
+        NSString *sql = [NSString stringWithFormat:UpdateAlbumPhotoCountSQL, photoCount, albumId];
+        
+        BOOL flag = [db executeUpdate:sql];
+        
+    }];
+    return YES;
+}
+
 - (TAlbumObject *)getLastestAlbumResultSet {
     
     NSMutableArray* rooms=[NSMutableArray array];
@@ -103,6 +115,7 @@ static FMDatabaseQueue *_queue;
     albumObj.id = [rs intForColumn:ROWID];
     albumObj.name = [rs stringForColumn:NAME];
     albumObj.state = [rs intForColumn:STATE];
+    albumObj.photoCount = [rs intForColumn:PHOTO_COUNT];
     return albumObj;
     
 }
@@ -110,9 +123,9 @@ static FMDatabaseQueue *_queue;
 - (BOOL)insertPicture:(TPictureAudioObject *)obj {
     [_queue inDatabase:^(FMDatabase * _Nonnull db) {
         
-        NSString *sql = [NSString stringWithFormat:InsertPictureSQL, obj.name, obj.path, obj.type, obj.state, obj.albumName, obj.albumId];
+        NSString *sql = [NSString stringWithFormat:InsertPictureSQL, obj.name, obj.path, obj.thumbPath, obj.type, obj.state, obj.albumName, obj.albumId];
         BOOL flag = [db executeUpdate:sql];
-        NSLog(@" insert picture %ld", flag);
+        NSLog(@" insert picture %d", flag);
     }];
     return NO;
 }
@@ -137,6 +150,7 @@ static FMDatabaseQueue *_queue;
     [pictureObj setId:[rs intForColumn:ROWID]];
     [pictureObj setName:[rs stringForColumn:NAME]];
     [pictureObj setPath:[rs stringForColumn:PATH]];
+    [pictureObj setThumbPath:[rs stringForColumn:THUMB_PATH]];
     [pictureObj setType: [rs intForColumn:TYPE]];
     [pictureObj setState:[rs intForColumn:STATE]];
     [pictureObj setAlbumId:[rs intForColumn:ALBUM_ID]];

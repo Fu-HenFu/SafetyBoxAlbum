@@ -64,7 +64,8 @@ static NSString* const kCellConstant = @"CollectiveItem";
     
     // 将标题视图包装到 UIBarButtonItem 中
     UIBarButtonItem *leftBarButtonItem = [[UIBarButtonItem alloc] initWithCustomView:titleView];
-    self.navigationItem.leftBarButtonItem = leftBarButtonItem;
+//    self.navigationItem.leftBarButtonItem = leftBarButtonItem;
+    self.navigationItem.titleView = titleView;
     
     // 创建“免费试用”按钮
     UIButton *freeTrialButton = [UIButton buttonWithType:UIButtonTypeSystem];
@@ -96,8 +97,9 @@ static NSString* const kCellConstant = @"CollectiveItem";
     [settingsButton addTarget:self action:@selector(settingsTapped:) forControlEvents:UIControlEventTouchUpInside];
     
     UIBarButtonItem *settingsButtonItem = [[UIBarButtonItem alloc] initWithCustomView:settingsButton];
+    self.navigationItem.leftBarButtonItem = settingsButtonItem;
     // 将“免费试用”和“设置”按钮设置到导航栏的右侧.顺序从右到左
-    self.navigationItem.rightBarButtonItems = @[settingsButtonItem, buyButtonItem];//@[settingsButtonItem, buyButtonItem];
+    self.navigationItem.rightBarButtonItems = @[ buyButtonItem];//@[settingsButtonItem, buyButtonItem];
     // ----------------------------------
     
     // Do any additional setup after loading the view.
@@ -108,8 +110,6 @@ static NSString* const kCellConstant = @"CollectiveItem";
     
     self.collectionView.delegate = self;
     self.collectionView.dataSource = self;
-    // 初始化数据数组（这里只是示例，你可以根据实际情况来初始化数据）
-    //    self.dataArray = @[@"Item 1", @"Item 2", @"Item 3", @"Item 4", @"Item 5", @"Item 6", @"Item 7", @"Item 8", @"Item 9", @"Item 10", /* ... 更多数据 ... */];
 
     
     // 注册默认cell的类（如果它们是自定义的）
@@ -249,7 +249,7 @@ static NSString* const kCellConstant = @"CollectiveItem";
     // 根据屏幕的宽度来计算cell的大小
     CGFloat screenWidth = self.view.frame.size.width;
     // 例如，每个cell占据屏幕宽度的一半，高度为100
-    return CGSizeMake(screenWidth * 0.4, screenWidth * 0.5);
+    return CGSizeMake(screenWidth * 0.4, screenWidth * 0.55);
 }
 
 - (__kindof UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath
@@ -262,6 +262,7 @@ static NSString* const kCellConstant = @"CollectiveItem";
         albumObject = [self.dataArray objectAtIndex:indexPath.item];
         cell.albumName = albumObject.name;
         cell.albumId = albumObject.id;
+        cell.detailLabel.text = [NSString stringWithFormat:@"%ld个文件", albumObject.photoCount];
         // 其他配置代码
         cell.titleLabel.text = cell.albumName;
         cell.delegate = self;
@@ -348,12 +349,18 @@ static NSString* const kCellConstant = @"CollectiveItem";
 - (void)showAlbumClick:(TAlbumCollectionViewCell *)cell didTapButton:(NSString *)albumName {
     AlbumSettingViewController *controller = [[AlbumSettingViewController alloc]initWithAlbumId:cell.albumId andAlbumName:cell.albumName];
 //    [controller albumInfo:cell.albumId andAlbumName:cell.albumName];
+    controller.updateAlbumCountBlock = ^(NSInteger count) {
+        [cell.detailLabel setText:[NSString stringWithFormat:@"%ld个文件", count]];
+    };
     controller.navigationItem.title = albumName;
     controller.modalPresentationStyle = UIModalPresentationFullScreen;
     [self.navigationController pushViewController:controller animated:YES];
     
 }
 
+/**
+ moreDots事件
+ */
 - (void)showAlbumToosClick:(TAlbumCollectionViewCell *)cell {
     AlbumSettingViewController *controller = [[AlbumSettingViewController alloc]init];
     controller.modalPresentationStyle = UIModalPresentationFullScreen;
@@ -394,11 +401,10 @@ static NSString* const kCellConstant = @"CollectiveItem";
     }];
     
     // 添加操作按钮
-    UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"取消"
-                                                           style:UIAlertActionStyleCancel
-                                                         handler:nil];
+    UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"取消" style:UIAlertActionStyleCancel handler:nil];
     
     UIAlertAction *okAction = [UIAlertAction actionWithTitle:@"确定" style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+        
         // 处理用户点击确定按钮后的逻辑
         UITextField *textField = alertController.textFields.firstObject;
         NSString *inputText = textField.text;
@@ -453,4 +459,7 @@ static NSString* const kCellConstant = @"CollectiveItem";
     [picker dismissViewControllerAnimated:YES completion:nil];
 }
 
+- (void)updateAlbumCount:(NSInteger)albumCount {
+    
+}
 @end

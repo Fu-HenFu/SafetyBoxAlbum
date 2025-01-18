@@ -22,6 +22,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)insertFakeAlbum:(NSString *)albumName;
 
 - (NSArray<TAlbumObject *> *)queryAlbum:(NSInteger)state;
+- (BOOL)updateAlbumPhotoCount:(NSInteger)albumId andCount:(NSInteger)photoCount;
 
 - (TAlbumObject *)getLastestAlbumResultSet;
 

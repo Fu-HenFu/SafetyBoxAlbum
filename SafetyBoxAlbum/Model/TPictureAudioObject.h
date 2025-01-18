@@ -14,6 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (assign, nonatomic) NSInteger id;
 @property (nonatomic, strong) NSString *name;
 @property (nonatomic, strong) NSString *path;
+@property (nonatomic, strong) NSString *thumbPath;
 @property (nonatomic, assign) NSInteger type;
 @property (nonatomic, assign) NSInteger state;
 @property (nonatomic, strong) NSString *albumName;

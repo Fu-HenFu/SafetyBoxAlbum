@@ -7,7 +7,8 @@
 
 #import "TAlbumCollectionViewCell.h"
 @interface TAlbumCollectionViewCell()
-
+@property (assign, nonatomic) CGFloat screenWidth;
+@property (assign, nonatomic) CGFloat screenHeight;
 
 @end
 
@@ -25,15 +26,18 @@
 
 - (void)setupViews {
 //    [self setBackgroundColor:[UIColor yellowColor]];
+    self.screenWidth = [UIScreen mainScreen].bounds.size.width;
+    self.screenHeight = [UIScreen mainScreen].bounds.size.height;
+    
     // 初始化子视图
-    CGSize targetSize = CGSizeMake(100, 100); // 例如，20x20 像素
+    CGSize targetSize = CGSizeMake(self.screenWidth * 0.4, self.screenWidth * 0.4); // 例如，20x20 像素
     UIImage *iconImage = [self image:[UIImage imageNamed:@"album_select"] resizedToSize:targetSize];
     self.iconImageView = [[UIImageView alloc] initWithImage:iconImage];
     self.iconImageView.backgroundColor = [UIColor lightGrayColor];
     self.iconImageView.clipsToBounds = YES;
     
     // 设置圆角
-    self.iconImageView.layer.cornerRadius = 12; // 圆角半径为宽度或高度的一半即为圆形
+//    self.iconImageView.layer.cornerRadius = 12; // 圆角半径为宽度或高度的一半即为圆形
     self.iconImageView.layer.borderColor = [UIColor whiteColor].CGColor; // 可选：设置边框颜色
 
 
@@ -68,11 +72,17 @@
     [self.moreButton setImage:[UIImage imageNamed:@"moreDots"] forState:UIControlStateNormal];
     [self.contentView addSubview:self.moreButton];
     
+    CALayer *contentLayer = self.contentView.layer;
+    contentLayer.borderColor = UIColor.lightGrayColor.CGColor;
+    contentLayer.borderWidth = 1;
+    contentLayer.cornerRadius = 6;
+    contentLayer.masksToBounds = YES;
+    
     // 使用Masonry设置约束
     [self.iconImageView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.centerX.equalTo(self.mas_centerX);
         make.top.equalTo(self.mas_top);
-        make.width.height.equalTo(@170); // 假设图标的宽度和高度都是80
+        make.width.height.equalTo(@(self.screenWidth * 0.4)); // 假设图标的宽度和高度都是80
     }];
     
     [self.titleLabel mas_makeConstraints:^(MASConstraintMaker *make) {

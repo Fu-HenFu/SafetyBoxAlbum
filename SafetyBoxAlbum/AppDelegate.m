@@ -19,6 +19,7 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.
     
+    
     FMDatabaseQueue * db = [FMDatabaseQueue shareInstense];
     [db close];
     self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];

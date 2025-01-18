@@ -14,6 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) NSInteger id;
 @property (nonatomic, strong) NSString *name;
 @property (nonatomic, assign) NSInteger state;
+@property (nonatomic, assign) NSInteger photoCount;
 
 
 @end

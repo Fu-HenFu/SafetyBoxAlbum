@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		332840252D37A959008732E7 /* TPictureAudioObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 332840242D37A959008732E7 /* TPictureAudioObject.m */; };
+		332840282D3906F7008732E7 /* TPictureDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 332840272D3906F7008732E7 /* TPictureDetailViewController.m */; };
+		332840392D39FC7A008732E7 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 332840382D39FC7A008732E7 /* Localizable.strings */; };
 		338D6B562D35F5B20092589C /* LGPhotoPickerBrowserPhoto.m in Sources */ = {isa = PBXBuildFile; fileRef = 338D6AE42D35F5B20092589C /* LGPhotoPickerBrowserPhoto.m */; };
 		338D6B572D35F5B20092589C /* LGPhotoRect.m in Sources */ = {isa = PBXBuildFile; fileRef = 338D6AE62D35F5B20092589C /* LGPhotoRect.m */; };
 		338D6B582D35F5B20092589C /* LGPhotoPickerBrowserViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 338D6AE92D35F5B20092589C /* LGPhotoPickerBrowserViewController.m */; };
@@ -121,6 +123,12 @@
 		29619D40BE61B01BB2356623 /* Pods-SafetyBoxAlbum.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SafetyBoxAlbum.release.xcconfig"; path = "Target Support Files/Pods-SafetyBoxAlbum/Pods-SafetyBoxAlbum.release.xcconfig"; sourceTree = "<group>"; };
 		332840232D37A959008732E7 /* TPictureAudioObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TPictureAudioObject.h; sourceTree = "<group>"; };
 		332840242D37A959008732E7 /* TPictureAudioObject.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TPictureAudioObject.m; sourceTree = "<group>"; };
+		332840262D3906F7008732E7 /* TPictureDetailViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TPictureDetailViewController.h; sourceTree = "<group>"; };
+		332840272D3906F7008732E7 /* TPictureDetailViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TPictureDetailViewController.m; sourceTree = "<group>"; };
+		332840372D39FC7A008732E7 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		3328403A2D39FCC6008732E7 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Main.strings"; sourceTree = "<group>"; };
+		3328403B2D39FCC7008732E7 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/LaunchScreen.strings"; sourceTree = "<group>"; };
+		3328403C2D39FCC7008732E7 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		338D6AE32D35F5B20092589C /* LGPhotoPickerBrowserPhoto.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LGPhotoPickerBrowserPhoto.h; sourceTree = "<group>"; };
 		338D6AE42D35F5B20092589C /* LGPhotoPickerBrowserPhoto.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LGPhotoPickerBrowserPhoto.m; sourceTree = "<group>"; };
 		338D6AE52D35F5B20092589C /* LGPhotoRect.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LGPhotoRect.h; sourceTree = "<group>"; };
@@ -564,6 +572,7 @@
 				33F1B2E82D33902A00FFEFDA /* Assets.xcassets */,
 				33F1B2EA2D33902A00FFEFDA /* LaunchScreen.storyboard */,
 				33F1B2ED2D33902A00FFEFDA /* Info.plist */,
+				332840382D39FC7A008732E7 /* Localizable.strings */,
 				33F1B2EE2D33902A00FFEFDA /* main.m */,
 				33F1B2E52D33902800FFEFDA /* SafetyBoxAlbum.xcdatamodeld */,
 			);
@@ -629,6 +638,8 @@
 				33F1B3382D339CED00FFEFDA /* SettingViewController.m */,
 				33F1B3292D339C7C00FFEFDA /* AlbumSettingViewController.h */,
 				33F1B3282D339C7C00FFEFDA /* AlbumSettingViewController.m */,
+				332840262D3906F7008732E7 /* TPictureDetailViewController.h */,
+				332840272D3906F7008732E7 /* TPictureDetailViewController.m */,
 			);
 			path = Controller;
 			sourceTree = "<group>";
@@ -769,6 +780,7 @@
 			knownRegions = (
 				en,
 				Base,
+				"zh-Hans",
 			);
 			mainGroup = 33F1B2CD2D33902800FFEFDA;
 			productRefGroup = 33F1B2D72D33902800FFEFDA /* Products */;
@@ -800,6 +812,7 @@
 				338D6B882D35F5B20092589C /* lock@2x.png in Resources */,
 				338D6B852D35F5B20092589C /* checkbox_pic@2x.png in Resources */,
 				338D6B872D35F5B20092589C /* icon_pic_break@2x.png in Resources */,
+				332840392D39FC7A008732E7 /* Localizable.strings in Resources */,
 				338D6B902D35F5B20092589C /* xiang@2x.png in Resources */,
 				338D6B892D35F5B20092589C /* paizhao.png in Resources */,
 				338D6B832D35F5B20092589C /* checkbox_pic_non@2x.png in Resources */,
@@ -984,6 +997,7 @@
 				338D6B642D35F5B20092589C /* LGPhotoPickerCollectionView.m in Sources */,
 				338D6B692D35F5B20092589C /* DACircularProgressView.m in Sources */,
 				33F1B33A2D339CED00FFEFDA /* SettingViewController.m in Sources */,
+				332840282D3906F7008732E7 /* TPictureDetailViewController.m in Sources */,
 				338D6B712D35F5B20092589C /* SDWebImagePrefetcher.m in Sources */,
 				338D6B962D363CA10092589C /* TImageCollectionViewCell.m in Sources */,
 				338D6B592D35F5B20092589C /* LGImagePickerSelectView.m in Sources */,
@@ -1032,10 +1046,20 @@
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
+		332840382D39FC7A008732E7 /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				332840372D39FC7A008732E7 /* en */,
+				3328403C2D39FCC7008732E7 /* zh-Hans */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
 		33F1B2E22D33902800FFEFDA /* Main.storyboard */ = {
 			isa = PBXVariantGroup;
 			children = (
 				33F1B2E32D33902800FFEFDA /* Base */,
+				3328403A2D39FCC6008732E7 /* zh-Hans */,
 			);
 			name = Main.storyboard;
 			sourceTree = "<group>";
@@ -1044,6 +1068,7 @@
 			isa = PBXVariantGroup;
 			children = (
 				33F1B2EB2D33902A00FFEFDA /* Base */,
+				3328403B2D39FCC7008732E7 /* zh-Hans */,
 			);
 			name = LaunchScreen.storyboard;
 			sourceTree = "<group>";
@@ -1056,6 +1081,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -1117,6 +1143,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";

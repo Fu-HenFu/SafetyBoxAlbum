@@ -14,6 +14,7 @@
 #import "TPictureAudioObject.h"
 #import "GlobalDefine.h"
 #import "TStorage.h"
+#import "TPictureDetailViewController.h"
 
 @interface AlbumSettingViewController ()
 
@@ -106,12 +107,8 @@
         [self.addButton mas_makeConstraints:^(MASConstraintMaker *make) {
             if (@available(iOS 11.0, *)) {
                 // 对于iOS 11及以上版本，使用safeAreaLayoutGuide
-                make.bottom
-                    .equalTo(self.view.mas_safeAreaLayoutGuideBottom)
-                    .offset(0);
-                
+                make.bottom .equalTo(self.view.mas_safeAreaLayoutGuideBottom).offset(0);
                 make.centerX.equalTo(self.view.mas_centerX);
-                
                 make.height.equalTo(@(buttonHeight));
                 make.width.equalTo(@(buttonHeight));
             } else {
@@ -134,10 +131,7 @@
     [self prepareForPhotoBroswerWithImage];
     [self prepareForPhotoBroswerWithURL];
     
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(chosenNotification:)
-                                                 name:PICKER_TAKE_DONE
-                                               object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(chosenNotification:) name:PICKER_TAKE_DONE object:nil];
 }
 
 - (void)closeAction:(UIButton *)sender {
@@ -233,21 +227,11 @@
     if (imageName) {
         NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
         NSString *documentsDirectory = [paths firstObject];
-        NSString *filePath = [documentsDirectory stringByAppendingPathComponent:imageName];
-        
-        
+        NSString *filePath = [[documentsDirectory stringByAppendingPathComponent:@"thumb"] stringByAppendingPathComponent:imageName];
         UIImage *cellImage = [UIImage imageNamed:filePath];
         cell.imageView.image = cellImage;//self.dataArray[indexPath.item];
-        
-//        NSData *fileData = [NSData dataWithContentsOfFile:filePath];
-//        if (fileData) {
-//            NSString *fileContent = [[NSString alloc] initWithData:fileData encoding:NSUTF8StringEncoding];
-//            NSLog(@"File content: %@", fileContent);
-//        }
+
     }
-    
-    
-    
 
     return cell;
 }
@@ -257,6 +241,38 @@
 
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath {
     NSLog(@"Selected item at index path: %@", indexPath);
+    
+    TImageCollectionViewCell *cell = (TImageCollectionViewCell *)[collectionView cellForItemAtIndexPath:indexPath];
+    
+    // 设置单元格的图片
+    NSString *imageName = [self.dataArray[indexPath.item] name];
+    
+    if (imageName) {
+        NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+        NSString *documentsDirectory = [paths firstObject];
+        NSString *filePath = [documentsDirectory stringByAppendingPathComponent:imageName];
+        UIImage *cellImage = [UIImage imageNamed:filePath];
+        
+        // 准备跳转到全屏图片展示视图控制器
+        //        UIImage *selectedImage = self.images[indexPath.item];
+        TPictureDetailViewController *controller = [[TPictureDetailViewController alloc]init];
+        controller.image = cellImage;
+//        [self.navigationController pushViewController:controller animated:YES];
+        [controller setModalPresentationStyle:UIModalPresentationFullScreen];
+        [self presentViewController:controller animated:YES completion:^{
+                    
+        }];
+    }
+
+}
+
+- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
+    if ([segue.identifier isEqualToString:@"showDetail"]) {
+        NSDictionary *info = (NSDictionary *)sender;
+        UIImage *image = info[@"image"];
+        TPictureDetailViewController *detailVC = segue.destinationViewController;
+        detailVC.image = image;
+    }
 }
 
 
@@ -353,52 +369,7 @@
     NSArray *selectedArr = userInfo[@"selectAssets"];
     NSUInteger insertIndex = 0;
     NSMutableArray *tempDataArray = [NSMutableArray array];
-//    for (LGPhotoAssets *photo in selectedArr) {
-//        PHAsset *phasset = [PHAsset fetchAssetsWithALAssetURLs:@[photo.assetURL] options:nil].firstObject;
-//        NSString *imgIdentifier = @"";
-//        if (phasset) {
-//            
-//            imgIdentifier = [NSString stringWithFormat:@"%@.PNG", [phasset.localIdentifier stringByReplacingOccurrencesOfString:@"/" withString:@"_"]];
-//            
-//            NSString *imagePath = [self.documentsPath stringByAppendingPathComponent: imgIdentifier];
-//            NSData *imageData = UIImagePNGRepresentation(photo.originImage); // 或者使用 UIImageJPEGRepresentation
-//            BOOL flag = [imageData writeToFile:imagePath atomically:YES];
-//            //  照片转存成功
-//            if (flag) {
-//                TPictureAudioObject *pictureObject = [[TPictureAudioObject alloc]init];
-//                [pictureObject setName:imgIdentifier];
-//                [pictureObject setPath:imagePath];
-//                [pictureObject setType: PICTURE_TYPE];
-//                [pictureObject setState: USEFUL_STATE_TYPE];
-//                [pictureObject setAlbumName: self.albumName];
-//                [pictureObject setAlbumId: self.albumId];
-//                [self.dataArray addObject:pictureObject];
-//                
-//                [tempDataArray addObject:pictureObject];
-//            }
-//            
-//            NSLog(@" ImagePath %@", imagePath);
-//        }
-        
-        //缩略图
-//        [tempDataArray addObject:photo.thumbImage];
-//        [self.dataArray addObject:photo.thumbImage];
-        //原图
-//        [self.originImageArray addObject:photo.originImage];
-        //全屏图
-//        [self.fullResolutionImage addObject:photo.fullResolutionImage];
-//    }
-    
-//    [self.collectionView performBatchUpdates:^{
-//        NSMutableArray *indexPaths = [NSMutableArray array];
-//        for (NSUInteger i = 0; i < tempDataArray.count; i++) {
-//            [indexPaths addObject:[NSIndexPath indexPathForItem:insertIndex + i inSection:0]];
-//        }
-//        [self.collectionView insertItemsAtIndexPaths:indexPaths];
-//
-//    } completion:^(BOOL finished) {
-//        
-//    }];
+
 
 }
 
@@ -414,6 +385,9 @@
         NSURL *imageUrl = asset.assetURL;
         
         [self.imageUrlArray addObject:imageUrl];
+        UIImage *originImage = asset.originImage;
+        UIImage *thumbImage = asset.thumbImage;
+        
     }
     //  删除相册中的照片
     [self excuteDeleteFromAlbum:nil];
@@ -442,13 +416,10 @@
  */
 - (void)translateAlbumIntoAppDir: (NSArray<LGPhotoAssets *> *)selectedImage withImageInfo: (NSArray *)urlArray {
     
-    
     NSMutableArray *tempDataArray = [NSMutableArray array];
     // 保存照片到沙盒
     self.documentsPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) firstObject];
-    
-    
-    
+
     for (LGPhotoAssets *asset in selectedImage) {
         
         PHAsset *phasset = [PHAsset fetchAssetsWithALAssetURLs:@[asset.assetURL] options:nil].firstObject;
@@ -460,11 +431,30 @@
             NSString *imagePath = [self.documentsPath stringByAppendingPathComponent: imgIdentifier];
             NSData *imageData = UIImagePNGRepresentation(asset.originImage); // 或者使用 UIImageJPEGRepresentation
             BOOL flag = [imageData writeToFile:imagePath atomically:YES];
+            
+            NSString *thumbDirPah = [self.documentsPath stringByAppendingPathComponent: @"thumb"];
+            NSFileManager *fileManager = [NSFileManager defaultManager];
+            
+            if (![fileManager fileExistsAtPath:thumbDirPah]) {
+                NSError *error;
+                [fileManager createDirectoryAtPath:thumbDirPah withIntermediateDirectories:YES attributes:nil error:&error];
+                if (error) {
+                    NSLog(@"Error occur");
+                }
+            } else {
+                
+            }
+            
+            NSString *thumbImagePath = [thumbDirPah stringByAppendingPathComponent:imgIdentifier];
+            NSData *thumbImageData = UIImagePNGRepresentation(asset.thumbImage);
+            BOOL flag2 = [thumbImageData writeToFile:thumbImagePath atomically:YES];
+            
             //  照片转存成功
             if (flag) {
                 TPictureAudioObject *pictureObject = [[TPictureAudioObject alloc]init];
                 [pictureObject setName:imgIdentifier];
                 [pictureObject setPath:imagePath];
+                [pictureObject setThumbPath:thumbImagePath];
                 [pictureObject setType: PICTURE_TYPE];
                 [pictureObject setState: USEFUL_STATE_TYPE];
                 [pictureObject setAlbumName: self.albumName];
@@ -477,7 +467,11 @@
             
             NSLog(@" ImagePath %@", imagePath);
         }
-        
+        NSLog(@" imgggg %ld", [selectedImage indexOfObject:asset]);
+        if ([selectedImage indexOfObject:asset] == selectedImage.count - 1 ) {
+            NSInteger totalPhotoCount = self.dataArray.count + selectedImage.count;
+            [self updateAlbumPhotoCount:totalPhotoCount andAlbumId:self.albumId];
+        }
     }
     
     int insertIndex = self.dataArray.count;
@@ -492,18 +486,25 @@
             [self.collectionView insertItemsAtIndexPaths:indexPaths];
 
         } completion:^(BOOL finished) {
-            
+            if (self.updateAlbumCountBlock) {
+                self.updateAlbumCountBlock(self.dataArray.count);
+            }
         }];
     } @catch (NSException *exception) {
         NSLog(@"Exception Occur %@", exception.description);
     }
-    
 
 }
 
 - (void)addRecordInDB: (TPictureAudioObject *) pictureObject{
     BOOL flag = [self.storage insertPicture:pictureObject];
+ 
     NSLog(@"insert flag %d", flag);
+}
+
+- (void)updateAlbumPhotoCount:(NSInteger)photoCount andAlbumId:(NSInteger)albumId {
+    [self.storage updateAlbumPhotoCount:albumId andCount:photoCount];
+
 }
 
 - (void)albumInfo:(NSInteger)albumId andAlbumName:(NSString *)albumName{
@@ -511,5 +512,44 @@
     self.albumName = albumName;
 }
 
+//- (void)handleImageTap3:(TImageCollectionViewCell *)cell {
+//    CGFloat cellWidth = (self.screenWidth - 3 * 10) / 4;
+//    
+//  
+//    
+////    if (CGRectEqualToRect(cell.frame, self.original ImageViewFrame)) {
+//        // 放大到全屏
+//        [UIView animateWithDuration:0.3 animations:^{
+//            view.frame = self.view.bounds;
+//            self.scrollView.contentSize = self.view.bounds.size; // 调整 contentSize 以支持滚动
+//        }];
+////    } else {
+////        // 恢复原状
+////        [UIView animateWithDuration:0.3 animations:^{
+////            view.frame = self.originalImageViewFrame;
+////            self.scrollView.contentSize = self.view.bounds.size; // 恢复 contentSize
+////        }];
+////    }
+//
+//}
+//
+//- (void)handleImageTap:(UITapGestureRecognizer *)sender {
+//    UIView *view = sender.view;
+// 
+//    // 切换到全屏模式或恢复原状
+//    if (CGRectEqualToRect(view.frame, self.originalImageViewFrame)) {
+//        // 放大到全屏
+//        [UIView animateWithDuration:0.3 animations:^{
+//            view.frame = self.view.bounds;
+//            self.scrollView.contentSize = self.view.bounds.size; // 调整 contentSize 以支持滚动
+//        }];
+//    } else {
+//        // 恢复原状
+//        [UIView animateWithDuration:0.3 animations:^{
+//            view.frame = self.originalImageViewFrame;
+//            self.scrollView.contentSize = self.view.bounds.size; // 恢复 contentSize
+//        }];
+//    }
+//}
 
 @end
