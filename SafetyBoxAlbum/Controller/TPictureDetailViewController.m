@@ -41,17 +41,28 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    UIScrollView *scrollView = [[UIScrollView alloc] initWithFrame:self.view.bounds];
-    scrollView.pagingEnabled = YES;
-    scrollView.delegate = self;
-    scrollView.contentSize = CGSizeMake(self.view.bounds.size.width * self.assetsFetchResults.count, self.view.bounds.size.height);
-    scrollView.minimumZoomScale = 1.0;
-    scrollView.maximumZoomScale = 6.0; // 最大缩放比例，可以根据需要调整
-    [self.view addSubview:scrollView];
+    self.scrollView = [[UIScrollView alloc] initWithFrame:self.view.bounds];
+    self.scrollView.pagingEnabled = YES;
+    self.scrollView.delegate = self;
+    self.scrollView.contentSize = CGSizeMake(self.view.bounds.size.width * self.assetsFetchResults.count, self.view.bounds.size.height);
+    self.scrollView.minimumZoomScale = 1.0;
+    self.scrollView.maximumZoomScale = 6.0; // 最大缩放比例，可以根据需要调整
+    [self.view addSubview:self.scrollView];
     
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
     NSString *documentsDirectory = [paths firstObject];
     
+//    [self loadImageForPage:0];
+//    [self loadImageForPage:1];
+    
+    [self loadImageForPage:self.currentIndexPath.item];
+    if (self.currentIndexPath.item == self.assetsFetchResults.count - 1) {
+        [self loadImageForPage:self.currentIndexPath.item - 1];
+    } else {
+        [self loadImageForPage:self.currentIndexPath.item + 1];
+    }
+
+    /**
     for (NSInteger i = 0; i < self.assetsFetchResults.count; i++) {
         UIImageView *imageView = [[UIImageView alloc] initWithFrame:CGRectMake(i * self.view.bounds.size.width, 0, self.view.bounds.size.width, self.view.bounds.size.height)];
         imageView.contentMode = UIViewContentModeScaleAspectFit;
@@ -85,9 +96,9 @@
 //        }];
         [scrollView addSubview:imageView];
     }
-    
+   
     scrollView.contentOffset = CGPointMake(self.currentIndexPath.item * self.view.bounds.size.width, 0);
-    
+     */
     // 初始化工具栏
     self.toolbar = [[UIToolbar alloc] init];
     self.toolbar.translatesAutoresizingMaskIntoConstraints = NO; // 禁用自动调整框架
@@ -141,11 +152,12 @@
 - (UIView *)viewForZoomingInScrollView:(UIScrollView *)scrollView {
     return self.imageView;
 }
-/**
+
 - (void)loadImageForPage:(NSInteger)page {
     if (page < 0 || page >= self.assetsFetchResults.count) return;
     
-    CGRect frame = CGRectMake(page * self.view.bounds.size.width, 0, self.view.bounds.size.width, self.view.bounds.size.height);
+    CGRect frame = CGRectMake(page * self.view.bounds.size.width, 0, 
+                              self.view.bounds.size.width, self.view.bounds.size.height);
     UIImageView *imageView = [[UIImageView alloc] initWithFrame:frame];
     imageView.contentMode = UIViewContentModeScaleAspectFit;
     
@@ -174,7 +186,21 @@
     NSString *documentsDirectory = [paths firstObject];
     return [documentsDirectory stringByAppendingPathComponent:imageName];
 }
-*/
+
+#pragma mark - UIScrollViewDelegate
+ 
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
+    CGFloat pageWidth = scrollView.frame.size.width;
+    NSInteger currentPage = floor((scrollView.contentOffset.x - pageWidth / 2) / pageWidth) + 1;
+    
+    // 加载当前页和相邻页的图像
+    [self loadImageForPage:currentPage];
+    [self loadImageForPage:currentPage + 1];
+    [self loadImageForPage:currentPage - 1];
+    
+    // 这里可以添加逻辑来移除远离当前页的图像视图，以节省内存
+}
+
 - (void)handleTap:(UITapGestureRecognizer *)gesture {
     // 切换导航栏和工具栏的隐藏状态
     self.areBarsHidden = !self.areBarsHidden;
