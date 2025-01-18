@@ -6,6 +6,7 @@
 //
 
 #import "TPictureDetailViewController.h"
+#import "TPictureAudioObject.h"
 #import "Masonry.h"
 
 @interface TPictureDetailViewController ()
@@ -14,50 +15,78 @@
 @property (nonatomic, strong) UIToolbar *toolbar;
 
 @property (nonatomic, assign) BOOL areBarsHidden;
+ 
+@property (nonatomic, strong) NSIndexPath *currentIndexPath;
+@property (nonatomic, strong) NSArray<TPictureAudioObject *> *assetsFetchResults;
+@property (nonatomic, strong) PHCachingImageManager *imageManager;
+@property (nonatomic, strong) NSCache *imageCache;
 
 @end
 
 @implementation TPictureDetailViewController
 
+
+- (instancetype)initWithIndexPath:(NSIndexPath *)indexPath assetsFetchResults:(NSArray<TPictureAudioObject *> *)assetsFetchResults imageManager:(PHCachingImageManager *)imageManager {
+    self = [super init];
+    if (self) {
+        self.currentIndexPath = indexPath;
+        self.assetsFetchResults = assetsFetchResults;
+        self.imageManager = imageManager;
+        
+        self.imageCache = [[NSCache alloc] init];
+    }
+    return self;
+}
+ 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    // Do any additional setup after loading the view.
-    self.areBarsHidden = NO;
-
-    // 获取导航控制器的导航条
-//        UINavigationBar *navigationBar = self.navigationController.navigationBar;
-//        
-//        // 设置导航条背景颜色
-//        UIColor *backgroundColor = [UIColor redColor]; // 将红色替换为你想要的颜色
-//        navigationBar.barTintColor = backgroundColor;
     
-    // 设置导航栏为不透明
-//        self.navigationController.navigationBar.translucent = NO;
+    UIScrollView *scrollView = [[UIScrollView alloc] initWithFrame:self.view.bounds];
+    scrollView.pagingEnabled = YES;
+    scrollView.delegate = self;
+    scrollView.contentSize = CGSizeMake(self.view.bounds.size.width * self.assetsFetchResults.count, self.view.bounds.size.height);
+    scrollView.minimumZoomScale = 1.0;
+    scrollView.maximumZoomScale = 6.0; // 最大缩放比例，可以根据需要调整
+    [self.view addSubview:scrollView];
+    
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString *documentsDirectory = [paths firstObject];
+    
+    for (NSInteger i = 0; i < self.assetsFetchResults.count; i++) {
+        UIImageView *imageView = [[UIImageView alloc] initWithFrame:CGRectMake(i * self.view.bounds.size.width, 0, self.view.bounds.size.width, self.view.bounds.size.height)];
+        imageView.contentMode = UIViewContentModeScaleAspectFit;
         
-        // 可能需要调整视图的布局来适应不透明的导航栏
-        // 例如，设置 edgesForExtendedLayout
-        self.edgesForExtendedLayout = UIRectEdgeNone;
+        // 获取 Documents 目录路径
+            
+        NSString *documentsDirectory = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES).firstObject;
+        NSString *filePath = [documentsDirectory stringByAppendingPathComponent:self.assetsFetchResults[i].name];
+        
+        // 检查文件是否存在
+        if ([[NSFileManager defaultManager] fileExistsAtPath:filePath]) {
+            // 读取图片数据
+            NSData *imageData = [NSData dataWithContentsOfFile:filePath];
+            if (imageData) {
+                // 返回 UIImage 对象
+                imageView.image = [UIImage imageWithData:imageData];
+            }
+        }
+            // 构建图片文件路径
+//            NSString *filePath = [documentsDirectory stringByAppendingPathComponent:self.assetsFetchResults[i].path];
+            
+            
+//        PHAsset *asset = [PHAsset fetchAssetsWithALAssetURLs:@[self.assetsFetchResults[i].assetURL] options:nil].firstObject;
+////        PHAsset *asset = self.assetsFetchResults[i];
+//        [self.imageManager requestImageForAsset:asset
+//                                     targetSize:CGSizeMake(self.view.bounds.size.width * [UIScreen mainScreen].scale, self.view.bounds.size.height * [UIScreen mainScreen].scale)
+//                                    contentMode:PHImageContentModeAspectFit
+//                                        options:nil
+//                                  resultHandler:^(UIImage *result, NSDictionary *info) {
+//            imageView.image = result;
+//        }];
+        [scrollView addSubview:imageView];
+    }
     
-    [self.view setBackgroundColor:[UIColor whiteColor]];
-    
-    self.scrollView = [[UIScrollView alloc] initWithFrame:self.view.bounds];
-    self.scrollView.delegate = self;
-    self.scrollView.minimumZoomScale = 1.0;
-    self.scrollView.maximumZoomScale = 6.0; // 设置最大缩放比例
-    [self.scrollView setShowsVerticalScrollIndicator:NO];
-    [self.scrollView setShowsHorizontalScrollIndicator:NO];
-    [self.view addSubview:self.scrollView];
-    
-    self.imageView = [[UIImageView alloc] initWithImage:self.image];
-    self.imageView.contentMode = UIViewContentModeScaleAspectFit;
-    self.imageView.frame = self.scrollView.bounds;
-    // 将 UIImageView 的 clipsToBounds 设置为 YES，以裁剪超出边界的部分
-        self.imageView.clipsToBounds = YES;
-    [self.scrollView addSubview:self.imageView];
-    
-//    self.scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
-
-    self.scrollView.contentSize = self.imageView.frame.size; // 设置 scrollView 的内容大小
+    scrollView.contentOffset = CGPointMake(self.currentIndexPath.item * self.view.bounds.size.width, 0);
     
     // 初始化工具栏
     self.toolbar = [[UIToolbar alloc] init];
@@ -107,13 +136,45 @@
     // 添加点击手势识别器
     UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)];
     [self.view addGestureRecognizer:tapGesture];
-
 }
 
 - (UIView *)viewForZoomingInScrollView:(UIScrollView *)scrollView {
     return self.imageView;
 }
-
+/**
+- (void)loadImageForPage:(NSInteger)page {
+    if (page < 0 || page >= self.assetsFetchResults.count) return;
+    
+    CGRect frame = CGRectMake(page * self.view.bounds.size.width, 0, self.view.bounds.size.width, self.view.bounds.size.height);
+    UIImageView *imageView = [[UIImageView alloc] initWithFrame:frame];
+    imageView.contentMode = UIViewContentModeScaleAspectFit;
+    
+    NSString *imagePath = [self imagePathForIndex:page andImageName:self.assetsFetchResults[page].name];
+    UIImage *cachedImage = [self.imageCache objectForKey:imagePath];
+    
+    if (cachedImage) {
+        imageView.image = cachedImage;
+    } else {
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+            UIImage *image = [UIImage imageWithContentsOfFile:imagePath];
+            if (image) {
+                [self.imageCache setObject:image forKey:imagePath];
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    imageView.image = image;
+                });
+            }
+        });
+    }
+    
+    [self.scrollView addSubview:imageView];
+}
+ 
+- (NSString *)imagePathForIndex:(NSUInteger)index andImageName:(NSString *)imageName {
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString *documentsDirectory = [paths firstObject];
+    return [documentsDirectory stringByAppendingPathComponent:imageName];
+}
+*/
 - (void)handleTap:(UITapGestureRecognizer *)gesture {
     // 切换导航栏和工具栏的隐藏状态
     self.areBarsHidden = !self.areBarsHidden;

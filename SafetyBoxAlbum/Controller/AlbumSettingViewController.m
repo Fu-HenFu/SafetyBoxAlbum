@@ -42,6 +42,8 @@
 @property (nonatomic, strong) TStorage *storage;
 @property (nonatomic, strong) NSString *documentsPath;
 
+@property (nonatomic, strong) PHCachingImageManager *imageManager;
+
 @end
 
 @implementation AlbumSettingViewController
@@ -66,7 +68,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-
+    self.imageManager = [[PHCachingImageManager alloc] init];
     // Do any additional setup after loading the view.
     [self.view setBackgroundColor:[UIColor whiteColor]];
     
@@ -252,10 +254,11 @@
         NSString *documentsDirectory = [paths firstObject];
         NSString *filePath = [documentsDirectory stringByAppendingPathComponent:imageName];
         UIImage *cellImage = [UIImage imageNamed:filePath];
+
         
         // 准备跳转到全屏图片展示视图控制器
         //        UIImage *selectedImage = self.images[indexPath.item];
-        TPictureDetailViewController *controller = [[TPictureDetailViewController alloc]init];
+        TPictureDetailViewController *controller = [[TPictureDetailViewController alloc]initWithIndexPath:indexPath assetsFetchResults:self.dataArray imageManager:self.imageManager];
         controller.image = cellImage;
 //        [self.navigationController pushViewController:controller animated:YES];
         [controller setModalPresentationStyle:UIModalPresentationFullScreen];
