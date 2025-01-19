@@ -13,13 +13,18 @@
 
 @property (nonatomic, strong) UIScrollView *scrollView;
 @property (nonatomic, strong) UIToolbar *toolbar;
+@property (nonatomic, strong) UIView *topToolbar;
 
 @property (nonatomic, assign) BOOL areBarsHidden;
  
 @property (nonatomic, strong) NSIndexPath *currentIndexPath;
 @property (nonatomic, strong) NSArray<TPictureAudioObject *> *assetsFetchResults;
 @property (nonatomic, strong) PHCachingImageManager *imageManager;
+
 @property (nonatomic, strong) NSCache *imageCache;
+@property (nonatomic, assign) NSInteger totalImages;
+@property (nonatomic, strong) NSMutableSet *visibleImageViews;
+@property (nonatomic, strong) NSDictionary *imageNameMap; // 用于存储索引和文件名的映射
 
 @end
 
@@ -32,8 +37,17 @@
         self.currentIndexPath = indexPath;
         self.assetsFetchResults = assetsFetchResults;
         self.imageManager = imageManager;
-        
+        self.visibleImageViews = [NSMutableSet set];
+        self.totalImages = assetsFetchResults.count;
         self.imageCache = [[NSCache alloc] init];
+        
+        
+        // 初始化文件名映射（这里假设文件名是预先生成的随机字符串）
+        NSMutableDictionary *map = [NSMutableDictionary dictionary];
+        for (NSInteger i = 0; i < self.totalImages; i++) {
+            map[@(i)] = self.assetsFetchResults[i].name;
+        }
+        self.imageNameMap = [map copy];
     }
     return self;
 }
@@ -41,6 +55,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
+    [self.view setBackgroundColor:[UIColor whiteColor]];
     self.scrollView = [[UIScrollView alloc] initWithFrame:self.view.bounds];
     self.scrollView.pagingEnabled = YES;
     self.scrollView.delegate = self;
@@ -55,50 +70,38 @@
 //    [self loadImageForPage:0];
 //    [self loadImageForPage:1];
     
-    [self loadImageForPage:self.currentIndexPath.item];
-    if (self.currentIndexPath.item == self.assetsFetchResults.count - 1) {
-        [self loadImageForPage:self.currentIndexPath.item - 1];
-    } else {
-        [self loadImageForPage:self.currentIndexPath.item + 1];
-    }
+    // 预加载第500张照片
+     [self loadImageAtIndex:self.currentIndexPath.item];
+     
+     // 初始设置可见范围内的图片
+    self.scrollView.contentOffset = CGPointMake(self.currentIndexPath.item * self.view.bounds.size.width, 0);
 
-    /**
-    for (NSInteger i = 0; i < self.assetsFetchResults.count; i++) {
-        UIImageView *imageView = [[UIImageView alloc] initWithFrame:CGRectMake(i * self.view.bounds.size.width, 0, self.view.bounds.size.width, self.view.bounds.size.height)];
-        imageView.contentMode = UIViewContentModeScaleAspectFit;
-        
-        // 获取 Documents 目录路径
-            
-        NSString *documentsDirectory = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES).firstObject;
-        NSString *filePath = [documentsDirectory stringByAppendingPathComponent:self.assetsFetchResults[i].name];
-        
-        // 检查文件是否存在
-        if ([[NSFileManager defaultManager] fileExistsAtPath:filePath]) {
-            // 读取图片数据
-            NSData *imageData = [NSData dataWithContentsOfFile:filePath];
-            if (imageData) {
-                // 返回 UIImage 对象
-                imageView.image = [UIImage imageWithData:imageData];
-            }
-        }
-            // 构建图片文件路径
-//            NSString *filePath = [documentsDirectory stringByAppendingPathComponent:self.assetsFetchResults[i].path];
-            
-            
-//        PHAsset *asset = [PHAsset fetchAssetsWithALAssetURLs:@[self.assetsFetchResults[i].assetURL] options:nil].firstObject;
-////        PHAsset *asset = self.assetsFetchResults[i];
-//        [self.imageManager requestImageForAsset:asset
-//                                     targetSize:CGSizeMake(self.view.bounds.size.width * [UIScreen mainScreen].scale, self.view.bounds.size.height * [UIScreen mainScreen].scale)
-//                                    contentMode:PHImageContentModeAspectFit
-//                                        options:nil
-//                                  resultHandler:^(UIImage *result, NSDictionary *info) {
-//            imageView.image = result;
-//        }];
-        [scrollView addSubview:imageView];
-    }
-   
-    scrollView.contentOffset = CGPointMake(self.currentIndexPath.item * self.view.bounds.size.width, 0);
-     */
+    [self setupVisibleImagesForOffset:self.scrollView.contentOffset.x];
+    self.topToolbar = [[UIView alloc]init];
+    [self.topToolbar setBackgroundColor:[UIColor whiteColor]];
+//    self.topToolbar.translatesAutoresizingMaskIntoConstraints = NO;
+    [self.view addSubview:self.topToolbar];
+    
+    [self.topToolbar mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.top.equalTo(self.view.mas_top);
+            make.left.equalTo(self.view.mas_safeAreaLayoutGuideLeft);
+            make.right.equalTo(self.view.mas_safeAreaLayoutGuideRight);
+            make.height.equalTo(@88);
+    }];
+    
+    UIButton *closeButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    
+    [closeButton addTarget:self action:@selector(closeBrowserAction:) forControlEvents:UIControlEventTouchUpInside];
+    [closeButton setBackgroundImage:[UIImage imageNamed:@"circle_close"] forState:UIControlStateNormal];
+    [self.topToolbar addSubview:closeButton];
+    [closeButton mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.left.equalTo(self.topToolbar.mas_leftMargin).offset(10);
+        make.top.equalTo(self.topToolbar.mas_topMargin).offset(-10);
+        make.height.equalTo(@30);
+        make.width.equalTo(@30);
+    }];
+    
+
     // 初始化工具栏
     self.toolbar = [[UIToolbar alloc] init];
     self.toolbar.translatesAutoresizingMaskIntoConstraints = NO; // 禁用自动调整框架
@@ -149,8 +152,62 @@
     [self.view addGestureRecognizer:tapGesture];
 }
 
-- (UIView *)viewForZoomingInScrollView:(UIScrollView *)scrollView {
-    return self.imageView;
+- (UIImage *)loadImageAtIndex:(NSInteger)index {
+    
+    NSString *fileName = self.imageNameMap[@(index)];
+    NSString *filePath = [self imagePathForFileName:fileName];
+    UIImage *image = [self.imageCache objectForKey:filePath];
+    
+    if (!image) {
+        image = [UIImage imageWithContentsOfFile:filePath];
+        if (image) {
+            [self.imageCache setObject:image forKey:filePath];
+        }
+    }
+    
+    return image; // 这里实际上不返回，只是为了说明加载逻辑
+}
+
+- (NSString *)imagePathForFileName:(NSString *)fileName {
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString *documentsDirectory = [paths firstObject];
+    return [documentsDirectory stringByAppendingPathComponent:fileName];
+}
+
+- (void)setupVisibleImagesForOffset:(CGFloat)offset {
+    NSInteger pageIndex = (NSInteger)(offset / self.view.bounds.size.width);
+    
+    // 移除不再可见的ImageView
+    for (UIImageView *imageView in [self.visibleImageViews copy]) {
+        NSInteger imageViewIndex = imageView.tag;
+        if (abs((int)(imageViewIndex - pageIndex)) > 1) { // 只保留当前页和前后各一页
+            [imageView removeFromSuperview];
+            [self.visibleImageViews removeObject:imageView];
+        }
+    }
+    
+    
+    // 添加新的可见ImageView
+    for (NSInteger i = -1; i <= 1; i++) {
+        NSInteger imageViewIndex = pageIndex + i;
+        if (imageViewIndex >= 0 && imageViewIndex < self.totalImages && ![self.visibleImageViews containsObject:@(imageViewIndex)]) {
+            UIImageView *imageView = [[UIImageView alloc] initWithFrame:CGRectMake(imageViewIndex * self.view.bounds.size.width, 0, self.view.bounds.size.width, self.view.bounds.size.height)];
+            imageView.tag = imageViewIndex;
+            [imageView setContentMode:UIViewContentModeScaleAspectFit];
+            UIImage *image = [self loadImageAtIndex:imageViewIndex]; // 加载图片
+            imageView.image = image;
+            [self.scrollView addSubview:imageView];
+            [self.visibleImageViews addObject:imageView];
+            
+
+        }
+    }
+}
+ 
+#pragma mark - UIScrollViewDelegate
+ 
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
+    [self setupVisibleImagesForOffset:scrollView.contentOffset.x];
 }
 
 - (void)loadImageForPage:(NSInteger)page {
@@ -187,19 +244,6 @@
     return [documentsDirectory stringByAppendingPathComponent:imageName];
 }
 
-#pragma mark - UIScrollViewDelegate
- 
-- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
-    CGFloat pageWidth = scrollView.frame.size.width;
-    NSInteger currentPage = floor((scrollView.contentOffset.x - pageWidth / 2) / pageWidth) + 1;
-    
-    // 加载当前页和相邻页的图像
-    [self loadImageForPage:currentPage];
-    [self loadImageForPage:currentPage + 1];
-    [self loadImageForPage:currentPage - 1];
-    
-    // 这里可以添加逻辑来移除远离当前页的图像视图，以节省内存
-}
 
 - (void)handleTap:(UITapGestureRecognizer *)gesture {
     // 切换导航栏和工具栏的隐藏状态
@@ -207,7 +251,9 @@
     
     [self.navigationController setNavigationBarHidden:self.areBarsHidden animated:YES];
     self.toolbar.hidden = self.areBarsHidden;
+    self.topToolbar.hidden = self.areBarsHidden;
     
+    [self.view setBackgroundColor:self.areBarsHidden ? [UIColor blackColor] : [UIColor whiteColor]];
     // 如果需要，可以在这里调整其他视图的布局
 }
 
@@ -273,6 +319,10 @@
 
 - (void)moreButtonTapped:(UITapGestureRecognizer *)gesture {
     
+}
+
+- (void)closeBrowserAction:(UIButton *)sender {
+    [self dismissModalViewControllerAnimated:YES];
 }
 
 @end
