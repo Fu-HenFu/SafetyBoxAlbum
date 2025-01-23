@@ -8,6 +8,16 @@
 #import "TPictureDetailViewController.h"
 #import "TPictureAudioObject.h"
 #import "Masonry.h"
+#import "TStorage.h"
+
+NSString *kSuccessTitle = @"已生成";//@"Congratulations";
+NSString *kErrorTitle = @"Connection error";
+NSString *kNoticeTitle = @"Notice";
+NSString *kWarningTitle = @"Warning";
+NSString *kInfoTitle = @"已完成";
+NSString *kSubtitle = @"新的照片已保存到相册中";//@"You've just displayed this awesome Pop Up View";
+NSString *kButtonTitle = @"好的";
+NSString *kAttributeTitle = @"Attributed string operation successfully completed.";
 
 @interface TPictureDetailViewController ()
 
@@ -26,21 +36,31 @@
 @property (nonatomic, strong) NSMutableSet *visibleImageViews;
 @property (nonatomic, strong) NSDictionary *imageNameMap; // 用于存储索引和文件名的映射
 
+@property (nonatomic, strong) NSString *documentsPath;
+
+@property (nonatomic, strong) TStorage *storage;
+@property (nonatomic, assign) NSInteger albumId;
+@property (nonatomic, strong) NSString *albumName;
+
 @end
 
 @implementation TPictureDetailViewController
 
 
-- (instancetype)initWithIndexPath:(NSIndexPath *)indexPath assetsFetchResults:(NSArray<TPictureAudioObject *> *)assetsFetchResults imageManager:(PHCachingImageManager *)imageManager {
+- (instancetype)initWithIndexPath:(NSIndexPath *)indexPath assetsFetchResults:(NSArray<TPictureAudioObject *> *)assetsFetchResults imageManager:(PHCachingImageManager *)imageManager andAlbumId:(NSInteger)albumId andAlbumName:(nonnull NSString *)albumName{
+    
     self = [super init];
     if (self) {
+        
+        self.storage = [TStorage shareStorage];
         self.currentIndexPath = indexPath;
         self.assetsFetchResults = assetsFetchResults;
         self.imageManager = imageManager;
         self.visibleImageViews = [NSMutableSet set];
         self.totalImages = assetsFetchResults.count;
         self.imageCache = [[NSCache alloc] init];
-        
+        self.albumId = albumId;
+        self.albumName = albumName;
         
         // 初始化文件名映射（这里假设文件名是预先生成的随机字符串）
         NSMutableDictionary *map = [NSMutableDictionary dictionary];
@@ -48,6 +68,8 @@
             map[@(i)] = self.assetsFetchResults[i].name;
         }
         self.imageNameMap = [map copy];
+        
+        self.documentsPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) firstObject];
     }
     return self;
 }
@@ -79,6 +101,9 @@
     [self setupVisibleImagesForOffset:self.scrollView.contentOffset.x];
     self.topToolbar = [[UIView alloc]init];
     [self.topToolbar setBackgroundColor:[UIColor whiteColor]];
+    CALayer *topToolbarLayer = self.topToolbar.layer;
+    [topToolbarLayer setBorderWidth:1];
+    [topToolbarLayer setBorderColor:[UIColor lightGrayColor].CGColor];
 //    self.topToolbar.translatesAutoresizingMaskIntoConstraints = NO;
     [self.view addSubview:self.topToolbar];
     
@@ -96,7 +121,7 @@
     [self.topToolbar addSubview:closeButton];
     [closeButton mas_makeConstraints:^(MASConstraintMaker *make) {
             make.left.equalTo(self.topToolbar.mas_leftMargin).offset(10);
-        make.top.equalTo(self.topToolbar.mas_topMargin).offset(-10);
+        make.top.equalTo(self.topToolbar.mas_topMargin).offset(-20);
         make.height.equalTo(@30);
         make.width.equalTo(@30);
     }];
@@ -199,7 +224,10 @@
             [self.scrollView addSubview:imageView];
             [self.visibleImageViews addObject:imageView];
             
-
+//            if (i == 0) {
+//                
+//                self.showingImageView = imageView;
+//            }
         }
     }
 }
@@ -306,6 +334,15 @@
 }
 
 - (void)editButtonTapped:(UITapGestureRecognizer *)gesture {
+    NSString *fileName = self.assetsFetchResults[self.currentIndexPath.item].name;
+    
+    NSString *filePath = [self imagePathForFileName:fileName];
+    UIImage *image = [self.imageCache objectForKey:filePath];
+
+    CLPhotoShopViewController *vc = [[CLPhotoShopViewController alloc] init];
+    vc.orgImage = image;
+    vc.delegate = self;
+    [self presentViewController:vc animated:true completion:nil];
     
 }
 
@@ -322,7 +359,94 @@
 }
 
 - (void)closeBrowserAction:(UIButton *)sender {
-    [self dismissModalViewControllerAnimated:YES];
+    [self dismissViewControllerAnimated:YES completion:nil];
 }
+
+- (UIView *)viewForZoomingInScrollView:(UIScrollView *)scrollView {
+    // 计算当前显示的图片索引
+    NSInteger currentIndex = (NSInteger)(scrollView.contentOffset.x / self.view.frame.size.width);
+    NSLog(@"Current image index: %ld", (long)currentIndex);
+    
+    return nil;
+    
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+- (void)CLPhotoShopViewControllerFinishImage:(UIImage *)image {
+    self.image = image;
+    
+    // 生成一个 0 到 100 之间的随机整数
+    int randomNumber = arc4random_uniform(99999); // 101 是上限，生成的数在 0 到 100 之间
+    NSString *fileName = self.assetsFetchResults[self.currentIndexPath.item].name;	
+    NSArray *fileNames = [fileName componentsSeparatedByString:@"."];
+    if (fileNames.count != 2) {
+        return;
+    }
+    
+    fileName = [NSString stringWithFormat:@"%@_%d.%@", fileNames[0], randomNumber, fileNames[1]];
+    NSString *imagePath = [self.documentsPath stringByAppendingPathComponent: fileName];
+    NSData *imageData = UIImagePNGRepresentation(image);
+    [imageData writeToFile:imagePath atomically:YES];
+    
+    CGSize thumbSize = CGSizeMake(100, 100);
+    
+    UIGraphicsBeginImageContextWithOptions(thumbSize, NO, 0);
+    [self.image drawInRect:CGRectMake(0, 0, thumbSize.width, thumbSize.height)];
+    // 从当前上下文获取图像
+    UIImage *thumbnailImage = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    
+    NSString *thumbDirPah = [self.documentsPath stringByAppendingPathComponent: @"thumb"];
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+
+    NSString *thumbImagePath = [thumbDirPah stringByAppendingPathComponent:fileName];
+    
+    NSData *thumbImageData = UIImagePNGRepresentation(thumbnailImage);
+    BOOL flag2 = [thumbImageData writeToFile:thumbImagePath atomically:YES];
+    NSLog(@"");
+    
+    if (flag2) {
+        TPictureAudioObject *pictureObject = [[TPictureAudioObject alloc]init];
+        [pictureObject setName:fileName];
+        [pictureObject setPath:imagePath];
+        [pictureObject setThumbPath:thumbImagePath];
+        
+        [pictureObject setType: PICTURE_TYPE];
+        [pictureObject setState: USEFUL_STATE_TYPE];
+        [pictureObject setAlbumName: self.albumName];
+        [pictureObject setAlbumId: self.albumId];
+        [self addRecordInDB:pictureObject];
+    }
+    
+}
+
+/**
+ 插入数据库
+ */
+- (void)addRecordInDB: (TPictureAudioObject *) pictureObject{
+    BOOL flag = [self.storage insertPicture:pictureObject];
+    [self.storage updateAlbumPhotoCount:self.albumId];
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self dismissViewControllerAnimated:YES completion:^{
+            [self showSuccess];
+        }];
+    });
+}
+
+- (void)showSuccess
+{
+
+    SCLAlertView *alert = [[SCLAlertView alloc] initWithNewWindow];
+    alert.soundURL = [NSURL fileURLWithPath:[NSString stringWithFormat:@"%@/right_answer.mp3", [NSBundle mainBundle].resourcePath]];
+
+    [alert showInfo:self title:kInfoTitle subTitle:kSubtitle closeButtonTitle:kButtonTitle duration:0.0f];
+
+}
+
 
 @end

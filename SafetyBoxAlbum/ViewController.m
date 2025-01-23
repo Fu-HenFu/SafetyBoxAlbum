@@ -288,6 +288,7 @@ static NSString* const kCellConstant = @"CollectiveItem";
         albumObject = [self.dataArray objectAtIndex:indexPath.item];
         cell.albumName = albumObject.name;
         cell.albumId = albumObject.id;
+        cell.detailLabel.text = [NSString stringWithFormat:@"%ld个文件", albumObject.photoCount];
         // 其他配置代码
         cell.titleLabel.text = albumObject.name;
         cell.delegate = self;
@@ -347,12 +348,24 @@ static NSString* const kCellConstant = @"CollectiveItem";
 }
 
 - (void)showAlbumClick:(TAlbumCollectionViewCell *)cell didTapButton:(NSString *)albumName {
+    
+    // 创建标题标签并包装到 UIView 中
+    UILabel *titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 200, 40)]; // 设置标签大小和位置
+    titleLabel.text = albumName;
+    titleLabel.font = [UIFont systemFontOfSize:30.0];
+    titleLabel.textColor = [UIColor blackColor]; // 白色文字
+    titleLabel.textAlignment = NSTextAlignmentCenter; // 居中对齐
+    
+    UIView *titleView = [[UIView alloc] initWithFrame:titleLabel.frame];
+    [titleView addSubview:titleLabel];
+    
     AlbumSettingViewController *controller = [[AlbumSettingViewController alloc]initWithAlbumId:cell.albumId andAlbumName:cell.albumName];
 //    [controller albumInfo:cell.albumId andAlbumName:cell.albumName];
     controller.updateAlbumCountBlock = ^(NSInteger count) {
         [cell.detailLabel setText:[NSString stringWithFormat:@"%ld个文件", count]];
     };
-    controller.navigationItem.title = albumName;
+    controller.navigationItem.titleView = titleView;
+    self.navigationItem.backBarButtonItem = [[UIBarButtonItem alloc]initWithTitle:@"相簿" style:UIBarButtonItemStylePlain target:nil action:nil];
     controller.modalPresentationStyle = UIModalPresentationFullScreen;
     [self.navigationController pushViewController:controller animated:YES];
     

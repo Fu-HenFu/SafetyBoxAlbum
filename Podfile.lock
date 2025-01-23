@@ -14,6 +14,7 @@ PODS:
   - AFNetworking/Serialization (4.0.1)
   - AFNetworking/UIKit (4.0.1):
     - AFNetworking/NSURLSession
+  - CLPhotoCrop (0.1.4)
   - DACircularProgress (2.3.1)
   - FMDB (2.7.12):
     - FMDB/standard (= 2.7.12)
@@ -22,35 +23,102 @@ PODS:
     - FMDB/Core
   - JLDualCircularProgressView (1.0):
     - DACircularProgress
+  - LFAssetExportSession (1.0.3)
+  - LFFilterSuite (1.0.3):
+    - LFAssetExportSession
+  - LFImagePickerController/Core (1.7.4.3):
+    - LFAssetExportSession
+    - LFImagePickerController/LFGifPlayer
+    - LFImagePickerController/LFToGIF
+  - LFImagePickerController/LFGifPlayer (1.7.4.3)
+  - LFImagePickerController/LFMediaEdit (1.7.4.3):
+    - LFImagePickerController/Core
+    - LFMediaEditingController
+  - LFImagePickerController/LFToGIF (1.7.4.3)
+  - LFMediaEditingController (1.4.8.2):
+    - LFMediaEditingController/Core (= 1.4.8.2)
+  - LFMediaEditingController/Core (1.4.8.2):
+    - LFMediaEditingController/LFPhotoEditingController
+    - LFMediaEditingController/LFVideoEditingController
+  - LFMediaEditingController/JRFilterBar (1.4.8.2)
+  - LFMediaEditingController/JRPickColorView (1.4.8.2)
+  - LFMediaEditingController/LFColorMatrix (1.4.8.2)
+  - LFMediaEditingController/LFDownloadManager (1.4.8.2)
+  - LFMediaEditingController/LFDrawView (1.4.8.2)
+  - LFMediaEditingController/LFEasyNoticeBar (1.4.8.2)
+  - LFMediaEditingController/LFImageCoder (1.4.8.2)
+  - LFMediaEditingController/LFPhotoEditingController (1.4.8.2):
+    - LFFilterSuite
+    - LFMediaEditingController/JRFilterBar
+    - LFMediaEditingController/JRPickColorView
+    - LFMediaEditingController/LFColorMatrix
+    - LFMediaEditingController/LFDownloadManager
+    - LFMediaEditingController/LFDrawView
+    - LFMediaEditingController/LFEasyNoticeBar
+    - LFMediaEditingController/LFImageCoder
+    - LFMediaEditingController/LFPresentationCategory
+    - LFMediaEditingController/LFTipsGuideView
+    - LFMediaEditingController/SPDropMenu
+  - LFMediaEditingController/LFPresentationCategory (1.4.8.2)
+  - LFMediaEditingController/LFTipsGuideView (1.4.8.2)
+  - LFMediaEditingController/LFVideoEditingController (1.4.8.2):
+    - LFFilterSuite
+    - LFMediaEditingController/JRFilterBar
+    - LFMediaEditingController/JRPickColorView
+    - LFMediaEditingController/LFColorMatrix
+    - LFMediaEditingController/LFDownloadManager
+    - LFMediaEditingController/LFDrawView
+    - LFMediaEditingController/LFEasyNoticeBar
+    - LFMediaEditingController/LFImageCoder
+    - LFMediaEditingController/LFPresentationCategory
+    - LFMediaEditingController/LFTipsGuideView
+    - LFMediaEditingController/SPDropMenu
+  - LFMediaEditingController/SPDropMenu (1.4.8.2)
   - Masonry (1.1.0)
+  - SCLAlertView-Objective-C (1.3.0)
   - SDWebImage (5.20.0):
     - SDWebImage/Core (= 5.20.0)
   - SDWebImage/Core (5.20.0)
 
 DEPENDENCIES:
   - AFNetworking (~> 4.0.1)
+  - CLPhotoCrop (~> 0.1.4)
   - FMDB (~> 2.7.12)
   - JLDualCircularProgressView (~> 1.0)
+  - LFImagePickerController/LFMediaEdit
   - Masonry (~> 1.1.0)
+  - SCLAlertView-Objective-C
   - SDWebImage (~> 5.20.0)
 
 SPEC REPOS:
   trunk:
     - AFNetworking
+    - CLPhotoCrop
     - DACircularProgress
     - FMDB
     - JLDualCircularProgressView
+    - LFAssetExportSession
+    - LFFilterSuite
+    - LFImagePickerController
+    - LFMediaEditingController
     - Masonry
+    - SCLAlertView-Objective-C
     - SDWebImage
 
 SPEC CHECKSUMS:
   AFNetworking: 3bd23d814e976cd148d7d44c3ab78017b744cd58
+  CLPhotoCrop: 9e7b99a9d1722f32126c67afb4fe7c74f737b9c0
   DACircularProgress: 4dd437c0fc3da5161cb289e07ac449493d41db71
   FMDB: 728731dd336af3936ce00f91d9d8495f5718a0e6
   JLDualCircularProgressView: f98543f3d8aea84f4ae732ec3fe66a1955ca706f
+  LFAssetExportSession: c1e60bb85962bba9ff78e4a1d7a29919ec2e5540
+  LFFilterSuite: 522f6a3d94ee66528b7db5b34a9b84312b882de4
+  LFImagePickerController: dc2eab1d85e519c7a708dbf3a14e4e255bf3645b
+  LFMediaEditingController: c931a4d4dfb6c8aa635ebcea9fbbce7d17d9356d
   Masonry: 678fab65091a9290e40e2832a55e7ab731aad201
+  SCLAlertView-Objective-C: c17253cf0ce7543de3f9e4c7bd9341c1dd55c175
   SDWebImage: 73c6079366fea25fa4bb9640d5fb58f0893facd8
 
-PODFILE CHECKSUM: 29787b7c7cd14f74660587f3c98b86b2a2540bb4
+PODFILE CHECKSUM: bbfdebfbce2a65fb0abba52bcf9b0b066ade7529
 
 COCOAPODS: 1.16.2

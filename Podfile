@@ -9,6 +9,11 @@ target 'SafetyBoxAlbum' do
   pod 'FMDB', '~> 2.7.12'
   pod 'SDWebImage', '~> 5.20.0'
   pod 'JLDualCircularProgressView', '~> 1.0'
+  pod 'LFImagePickerController/LFMediaEdit'
+  pod 'CLPhotoCrop', '~> 0.1.4'
+  pod 'SCLAlertView-Objective-C'
+
+#  pod "PSImageEditors"
   # Pods for SafetyBoxAlbum
 
   target 'SafetyBoxAlbumTests' do

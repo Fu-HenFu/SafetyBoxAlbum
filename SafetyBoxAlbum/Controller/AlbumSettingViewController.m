@@ -38,11 +38,14 @@
 @property (nonatomic, assign) NSInteger albumId;
 @property (nonatomic, strong) NSString *albumName;
 
-
 @property (nonatomic, strong) TStorage *storage;
 @property (nonatomic, strong) NSString *documentsPath;
 
 @property (nonatomic, strong) PHCachingImageManager *imageManager;
+
+@property (nonatomic, strong) SCLAlertView *waitingAlert;
+@property (nonatomic, strong) SCLAlertView *successAlert;
+
 
 @end
 
@@ -59,7 +62,7 @@
         self.albumId = albumId;
         self.albumName = albumName;
         self.storage = [TStorage shareStorage];
-        [self.dataArray addObjectsFromArray:[self.storage queryPicture:USEFUL_STATE_TYPE andAlbumId:self.albumId]];
+        [self refetchDataFromDatabase];
 
     }
     return self;
@@ -130,10 +133,19 @@
     self.imagePickerController = [[UIImagePickerController alloc] init];
     self.imagePickerController.delegate = self;
     
-    [self prepareForPhotoBroswerWithImage];
-    [self prepareForPhotoBroswerWithURL];
+//    [self prepareForPhotoBroswerWithImage];
+//    [self prepareForPhotoBroswerWithURL];
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(chosenNotification:) name:PICKER_TAKE_DONE object:nil];
+}
+
+
+- (void)viewDidAppear:(BOOL)animated {
+    
+    [super viewDidAppear:animated];
+    
+    // 重新从数据库获取数据
+    [self refetchDataFromDatabase];
 }
 
 - (void)closeAction:(UIButton *)sender {
@@ -189,7 +201,7 @@
  使用相册选择照片
  */
 - (void)selectPhoto:(id)sender {
-    
+    [self dismissPopupView];
     [self presentPhotoPickerViewControllerWithStyle:LGShowImageTypeImagePicker];
 
 }
@@ -231,7 +243,7 @@
         NSString *documentsDirectory = [paths firstObject];
         NSString *filePath = [[documentsDirectory stringByAppendingPathComponent:@"thumb"] stringByAppendingPathComponent:imageName];
         UIImage *cellImage = [UIImage imageNamed:filePath];
-        cell.imageView.image = cellImage;//self.dataArray[indexPath.item];
+        cell.imageView.image = cellImage;
 
     }
 
@@ -258,7 +270,7 @@
         
         // 准备跳转到全屏图片展示视图控制器
         //        UIImage *selectedImage = self.images[indexPath.item];
-        TPictureDetailViewController *controller = [[TPictureDetailViewController alloc]initWithIndexPath:indexPath assetsFetchResults:self.dataArray imageManager:self.imageManager];
+        TPictureDetailViewController *controller = [[TPictureDetailViewController alloc]initWithIndexPath:indexPath assetsFetchResults:self.dataArray imageManager:self.imageManager andAlbumId:self.albumId andAlbumName:self.albumName];
         controller.image = cellImage;
 //        [self.navigationController pushViewController:controller animated:YES];
         [controller setModalPresentationStyle:UIModalPresentationFullScreen];
@@ -307,53 +319,10 @@
         } else {
             NSLog(@"照片删除失败: %@", error);
         }
-        dispatch_async(dispatch_get_main_queue(), ^{
-            
-            [self dismissPopupView];
-        });
         
     }];
 }
 
-
-/**
- 给照片浏览器传image的时候先包装成LGPhotoPickerBrowserPhoto对象
- */
-- (void)prepareForPhotoBroswerWithImage {
-    self.LGPhotoPickerBrowserPhotoArray = [[NSMutableArray alloc] init];
-    for (int i = 0; i < 5; i++) {
-        LGPhotoPickerBrowserPhoto *photo = [[LGPhotoPickerBrowserPhoto alloc] init];
-        photo.photoImage = [UIImage imageNamed:[NSString stringWithFormat:@"broswerPic%d.jpg",i]];
-        [self.LGPhotoPickerBrowserPhotoArray addObject:photo];
-    }
-}
-
-/**
- 给照片浏览器传URL的时候先包装成LGPhotoPickerBrowserPhoto对象
- */
-- (void)prepareForPhotoBroswerWithURL {
-    self.LGPhotoPickerBrowserURLArray = [[NSMutableArray alloc] init];
-    
-    LGPhotoPickerBrowserPhoto *photo = [[LGPhotoPickerBrowserPhoto alloc] init];
-    photo.photoURL = [NSURL URLWithString:@"http://img.ivsky.com/img/bizhi/slides/201511/11/december.jpg"];
-    [self.LGPhotoPickerBrowserURLArray addObject:photo];
-    
-    LGPhotoPickerBrowserPhoto *photo1 = [[LGPhotoPickerBrowserPhoto alloc] init];
-    photo1.photoURL = [NSURL URLWithString:@"http://h.hiphotos.baidu.com/image/pic/item/267f9e2f0708283890f56e02bb99a9014c08f128.jpg"];
-    [self.LGPhotoPickerBrowserURLArray addObject:photo1];
-    
-    LGPhotoPickerBrowserPhoto *photo2 = [[LGPhotoPickerBrowserPhoto alloc] init];
-    photo2.photoURL = [NSURL URLWithString:@"http://a.hiphotos.baidu.com/image/pic/item/b219ebc4b74543a9fa0c4bc11c178a82b90114a3.jpg"];
-    [self.LGPhotoPickerBrowserURLArray addObject:photo2];
-    
-    LGPhotoPickerBrowserPhoto *photo3 = [[LGPhotoPickerBrowserPhoto alloc] init];
-    photo3.photoURL = [NSURL URLWithString:@"http://c.hiphotos.baidu.com/image/pic/item/024f78f0f736afc33b1dbe65b119ebc4b7451298.jpg"];
-    [self.LGPhotoPickerBrowserURLArray addObject:photo3];
-    
-    LGPhotoPickerBrowserPhoto *photo4 = [[LGPhotoPickerBrowserPhoto alloc] init];
-    photo4.photoURL = [NSURL URLWithString:@"http://d.hiphotos.baidu.com/image/pic/item/77094b36acaf2edd481ef6e78f1001e9380193d5.jpg"];
-    [self.LGPhotoPickerBrowserURLArray addObject:photo4];
-}
 
 - (void)presentPhotoPickerViewControllerWithStyle:(LGShowImageType)style {
     LGPhotoPickerViewController *pickerVc = [[LGPhotoPickerViewController alloc] initWithShowType:style];
@@ -404,14 +373,59 @@
 }
 
 /**
+ 等待提示框
+ */
+- (void)showWaiting
+{
+    self.waitingAlert = [[SCLAlertView alloc] init];
+    
+    self.waitingAlert.showAnimationType = SCLAlertViewShowAnimationSlideInToCenter;
+    self.waitingAlert.hideAnimationType = SCLAlertViewHideAnimationSlideOutFromCenter;
+    
+    self.waitingAlert.backgroundType = SCLAlertViewBackgroundTransparent;
+    
+    [self.waitingAlert showWaiting:self title:@"稍等..."
+            subTitle:@"正在导入相册,请等待一下" closeButtonTitle:nil duration:0];
+    
+ 
+}
+
+- (void)showSuccess {
+    [self scrollToLastItem];
+    self.successAlert = [[SCLAlertView alloc] initWithNewWindow];
+
+    self.successAlert.soundURL = [NSURL fileURLWithPath:[NSString stringWithFormat:@"%@/right_answer.mp3", [NSBundle mainBundle].resourcePath]];
+
+    [self.successAlert addButton:@"好的" actionBlock:^{
+        [self scrollToLastItem];
+        if (self.imageUrlArray.count > 0) {
+            // 提示用户是否删除相册中的照片
+            [self askUserToDeletePhotoWithURL:self.imageUrlArray];
+        }
+    }];
+    
+    [self.successAlert showSuccess:@"成功移入相补" subTitle:@"haiahi" closeButtonTitle:nil duration:0.0f];
+//    self.successAlert show
+}
+
+/**
  提示是否删除相册中的照片,并保存照片到本地
  */
 - (void)excuteDeleteFromAlbum:(UIButton *)sender {
-    [self translateAlbumIntoAppDir:self.assetsArray withImageInfo: self.imageUrlArray];
-    if (self.imageUrlArray.count > 0) {
-        // 提示用户是否删除相册中的照片
-        [self askUserToDeletePhotoWithURL:self.imageUrlArray];
-    }
+    
+    [self showWaiting];
+    
+    dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+// 异步执行任务
+    dispatch_async(queue, ^{
+        [self translateAlbumIntoAppDir:self.assetsArray withImageInfo: self.imageUrlArray];
+//        if (self.imageUrlArray.count > 0) {
+//            // 提示用户是否删除相册中的照片
+//            [self askUserToDeletePhotoWithURL:self.imageUrlArray];
+//        }
+    });
+    
+
 }
 
 /**
@@ -477,6 +491,16 @@
         }
     }
     
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self.waitingAlert hideView];
+        [self showSuccess];
+        [self updateCollectionViewDataArray:tempDataArray];
+    });
+    
+
+}
+
+- (void)updateCollectionViewDataArray:(NSMutableArray *)tempDataArray {
     int insertIndex = self.dataArray.count;
     @try {
         // 更新数据源
@@ -489,6 +513,7 @@
             [self.collectionView insertItemsAtIndexPaths:indexPaths];
 
         } completion:^(BOOL finished) {
+
             if (self.updateAlbumCountBlock) {
                 self.updateAlbumCountBlock(self.dataArray.count);
             }
@@ -496,13 +521,11 @@
     } @catch (NSException *exception) {
         NSLog(@"Exception Occur %@", exception.description);
     }
-
 }
 
 - (void)addRecordInDB: (TPictureAudioObject *) pictureObject{
     BOOL flag = [self.storage insertPicture:pictureObject];
- 
-    NSLog(@"insert flag %d", flag);
+    
 }
 
 - (void)updateAlbumPhotoCount:(NSInteger)photoCount andAlbumId:(NSInteger)albumId {
@@ -515,8 +538,34 @@
     self.albumName = albumName;
 }
 
+/**
+ 查询数据库,获取照片
+ */
+- (void)refetchDataFromDatabase {
+    [self.dataArray removeAllObjects];
+    [self.dataArray addObjectsFromArray:[self.storage queryPicture:USEFUL_STATE_TYPE andAlbumId:self.albumId]];
+    
+    [self.collectionView reloadData];
+    [self scrollToLastItem];
+    
+    if (self.updateAlbumCountBlock) {
+        self.updateAlbumCountBlock(self.dataArray.count);
+    }
+}
+
+- (void)scrollToLastItem {
+    NSInteger numberOfSections = [self.collectionView numberOfSections];
+    if (numberOfSections > 0) {
+        NSInteger numberOfItemsInLastSection = [self.collectionView numberOfItemsInSection:numberOfSections - 1];
+        if (numberOfItemsInLastSection > 0) {
+            NSIndexPath *lastIndexPath = [NSIndexPath indexPathForItem:numberOfItemsInLastSection - 1 inSection:numberOfSections - 1];
+            [self.collectionView scrollToItemAtIndexPath:lastIndexPath atScrollPosition:UICollectionViewScrollPositionBottom animated:YES];
+        }
+    }
+}
+
 //- (void)handleImageTap3:(TImageCollectionViewCell *)cell {
-//    CGFloat cellWidth = (self.screenWidth - 3 * 10) / 4;
+//    CGFloat cellWidth = (self.screenWidth - 3 * 10) / 4;	
 //    
 //  
 //    

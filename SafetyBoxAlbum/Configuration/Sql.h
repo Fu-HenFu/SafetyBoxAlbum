@@ -71,4 +71,5 @@ static NSString *const QueryLastestAlbumSQL = @"SELECT id, name, state, photo_co
 static NSString *const QueryAlbumSQL = @"SELECT * FROM t_album WHERE state = 1 ORDER BY type ASC;";
 static NSString *const InsertPictureSQL = @"INSERT INTO t_picture_video (name, path, thumb_path, type, state, album_name, album_id) VALUES ('%@', '%@', '%@', %d, %d, '%@', %d);";
 static NSString *const QueryPictureWithAlbumIdSQL = @"SELECT * FROM t_picture_video WHERE state = 1 AND album_id = %ld;";
+static NSString *const QueryAlbumPhotoCount = @"SELECT photo_count FROM t_album WHERE id = %d";
 

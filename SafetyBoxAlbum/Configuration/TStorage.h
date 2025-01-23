@@ -29,6 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)insertPicture:(TPictureAudioObject *)obj;
 
 - (NSArray *)queryPicture:(NSInteger)state andAlbumId:(NSInteger)albumId;
+- (void)updateAlbumPhotoCount:(NSInteger)albumId;
 @end
 
 NS_ASSUME_NONNULL_END

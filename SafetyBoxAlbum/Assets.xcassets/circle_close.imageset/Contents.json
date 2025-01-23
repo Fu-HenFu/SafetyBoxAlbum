@@ -1,12 +1,12 @@
 {
   "images" : [
     {
-      "filename" : "guanbi1.png",
+      "filename" : "close.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "guanbi1-2.png",
+      "filename" : "close (1).png",
       "idiom" : "universal",
       "scale" : "2x"
     },

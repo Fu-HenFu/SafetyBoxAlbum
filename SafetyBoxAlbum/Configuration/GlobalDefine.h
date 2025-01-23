@@ -20,3 +20,5 @@ typedef enum : NSUInteger {
     USEFUL_STATE_TYPE,
 } STATE_TYPE;
 
+
+

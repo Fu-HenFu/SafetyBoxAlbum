@@ -8,6 +8,8 @@
 #import <UIKit/UIKit.h>
 #import <Masonry.h>
 #import <Foundation/Foundation.h>
+#import "TPictureAudioObject.h"
+#import "GlobalDefine.h"
 
 @protocol AlbumClickDelegate <NSObject>
 

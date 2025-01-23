@@ -6,6 +6,7 @@
 //
 
 #import "TAlbumCollectionViewCell.h"
+
 @interface TAlbumCollectionViewCell()
 @property (assign, nonatomic) CGFloat screenWidth;
 @property (assign, nonatomic) CGFloat screenHeight;

@@ -157,5 +157,23 @@ static FMDatabaseQueue *_queue;
     [pictureObj  setAlbumName:[rs stringForColumn:ALBUM_NAME]];
     return pictureObj;
 }
+
+- (void)updateAlbumPhotoCount:(NSInteger)albumId {
+    [_queue inDatabase:^(FMDatabase * _Nonnull db) {
+        NSString *sql = [NSString stringWithFormat:QueryAlbumPhotoCount, albumId];
+        FMResultSet* rs = [db executeQuery:sql];
+        while ([rs next]) {
+            int photoCount = [rs intForColumnIndex:0];
+            NSString *updateSql = [NSString stringWithFormat:UpdateAlbumPhotoCountSQL, photoCount+1, albumId];
+            [db executeUpdate:updateSql];
+            
+            break;
+        }
+        
+        [rs close];
+        
+    }];
+}
+
 @end
 
