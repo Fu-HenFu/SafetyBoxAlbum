@@ -121,7 +121,7 @@ NSString *kAttributeTitle = @"Attributed string operation successfully completed
     [self.topToolbar addSubview:closeButton];
     [closeButton mas_makeConstraints:^(MASConstraintMaker *make) {
             make.left.equalTo(self.topToolbar.mas_leftMargin).offset(10);
-        make.top.equalTo(self.topToolbar.mas_topMargin).offset(-20);
+        make.bottom.equalTo(self.topToolbar.mas_bottom).offset(-10);
         make.height.equalTo(@30);
         make.width.equalTo(@30);
     }];
@@ -338,7 +338,7 @@ NSString *kAttributeTitle = @"Attributed string operation successfully completed
     
     NSString *filePath = [self imagePathForFileName:fileName];
     UIImage *image = [self.imageCache objectForKey:filePath];
-
+    CGSize imageSize = [image size];
     CLPhotoShopViewController *vc = [[CLPhotoShopViewController alloc] init];
     vc.orgImage = image;
     vc.delegate = self;
@@ -377,8 +377,9 @@ NSString *kAttributeTitle = @"Attributed string operation successfully completed
 }
 
 - (void)CLPhotoShopViewControllerFinishImage:(UIImage *)image {
-    self.image = image;
+//    self.image = image;
     
+    CGSize imageSize = [image size];
     // 生成一个 0 到 100 之间的随机整数
     int randomNumber = arc4random_uniform(99999); // 101 是上限，生成的数在 0 到 100 之间
     NSString *fileName = self.assetsFetchResults[self.currentIndexPath.item].name;	
@@ -392,10 +393,10 @@ NSString *kAttributeTitle = @"Attributed string operation successfully completed
     NSData *imageData = UIImagePNGRepresentation(image);
     [imageData writeToFile:imagePath atomically:YES];
     
-    CGSize thumbSize = CGSizeMake(100, 100);
+    CGSize thumbSize = CGSizeMake(self.image.size.width, self.image.size.height);
     
     UIGraphicsBeginImageContextWithOptions(thumbSize, NO, 0);
-    [self.image drawInRect:CGRectMake(0, 0, thumbSize.width, thumbSize.height)];
+    [image drawInRect:CGRectMake(0, 0, thumbSize.width, thumbSize.height)];
     // 从当前上下文获取图像
     UIImage *thumbnailImage = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();

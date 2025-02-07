@@ -201,7 +201,7 @@ static NSString* const kCellConstant = @"CollectiveItem";
     
     // 调整图片和文字的位置（可选）
     contactorButton.imageEdgeInsets = UIEdgeInsetsMake(-10, 0, 0, -30); // 根据需要调整插图
-    contactorButton.titleEdgeInsets = UIEdgeInsetsMake(40, -30, 0, 0);  // 根据需要调整插图
+    contactorButton.titleEdgeInsets = UIEdgeInsetsMake(40, -40, 0, 0);  // 根据需要调整插图
     
     // 为按钮添加目标动作（可选）
     [contactorButton addTarget:self action:@selector(contactorTapped:) forControlEvents:UIControlEventTouchUpInside];
@@ -474,5 +474,15 @@ static NSString* const kCellConstant = @"CollectiveItem";
 
 - (void)updateAlbumCount:(NSInteger)albumCount {
     
+}
+
+- (void)viewDidLayoutSubviews {
+    [super viewDidLayoutSubviews];
+ 
+    // 使用 Masonry 更新 UICollectionView 的约束
+    [self.collectionView mas_remakeConstraints:^(MASConstraintMaker *make) {
+        make.top.left.and.right.equalTo(self.view);
+        make.bottom.equalTo(self.toolBar2.mas_top);
+    }];
 }
 @end

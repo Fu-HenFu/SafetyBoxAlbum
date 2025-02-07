@@ -272,6 +272,9 @@
         //        UIImage *selectedImage = self.images[indexPath.item];
         TPictureDetailViewController *controller = [[TPictureDetailViewController alloc]initWithIndexPath:indexPath assetsFetchResults:self.dataArray imageManager:self.imageManager andAlbumId:self.albumId andAlbumName:self.albumName];
         controller.image = cellImage;
+
+        
+        controller.thumbSize = cellImage.size;
 //        [self.navigationController pushViewController:controller animated:YES];
         [controller setModalPresentationStyle:UIModalPresentationFullScreen];
         [self presentViewController:controller animated:YES completion:^{
@@ -279,6 +282,28 @@
         }];
     }
 
+}
+
+- (NSInteger)photoBrowser:(LGPhotoPickerBrowserViewController *)photoBrowser numberOfItemsInSection:(NSUInteger)section{
+    if (self.showType == LGShowImageTypeImageBroswer) {
+        return self.LGPhotoPickerBrowserPhotoArray.count;
+    } else if (self.showType == LGShowImageTypeImageURL) {
+        return self.LGPhotoPickerBrowserURLArray.count;
+    } else {
+        NSLog(@"非法数据源");
+        return 0;
+    }
+}
+
+- (id<LGPhotoPickerBrowserPhoto>)photoBrowser:(LGPhotoPickerBrowserViewController *)pickerBrowser photoAtIndexPath:(NSIndexPath *)indexPath{
+    if (self.showType == LGShowImageTypeImageBroswer) {
+        return [self.LGPhotoPickerBrowserPhotoArray objectAtIndex:indexPath.item];
+    } else if (self.showType == LGShowImageTypeImageURL) {
+        return [self.LGPhotoPickerBrowserURLArray objectAtIndex:indexPath.item];
+    } else {
+        NSLog(@"非法数据源");
+        return nil;
+    }
 }
 
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
