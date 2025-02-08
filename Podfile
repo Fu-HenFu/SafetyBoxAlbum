@@ -12,6 +12,7 @@ target 'SafetyBoxAlbum' do
   pod 'LFImagePickerController/LFMediaEdit'
   pod 'CLPhotoCrop', '~> 0.1.4'
   pod 'SCLAlertView-Objective-C'
+  pod 'TZImagePickerController' 
 
 #  pod "PSImageEditors"
   # Pods for SafetyBoxAlbum

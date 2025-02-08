@@ -10,6 +10,7 @@
 		332840252D37A959008732E7 /* TPictureAudioObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 332840242D37A959008732E7 /* TPictureAudioObject.m */; };
 		332840282D3906F7008732E7 /* TPictureDetailViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 332840272D3906F7008732E7 /* TPictureDetailViewController.m */; };
 		332840392D39FC7A008732E7 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 332840382D39FC7A008732E7 /* Localizable.strings */; };
+		337C08342D57078A0036F5F6 /* TZImageUploadOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 337C08322D57078A0036F5F6 /* TZImageUploadOperation.m */; };
 		338D6B562D35F5B20092589C /* LGPhotoPickerBrowserPhoto.m in Sources */ = {isa = PBXBuildFile; fileRef = 338D6AE42D35F5B20092589C /* LGPhotoPickerBrowserPhoto.m */; };
 		338D6B572D35F5B20092589C /* LGPhotoRect.m in Sources */ = {isa = PBXBuildFile; fileRef = 338D6AE62D35F5B20092589C /* LGPhotoRect.m */; };
 		338D6B582D35F5B20092589C /* LGPhotoPickerBrowserViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 338D6AE92D35F5B20092589C /* LGPhotoPickerBrowserViewController.m */; };
@@ -129,6 +130,8 @@
 		3328403A2D39FCC6008732E7 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Main.strings"; sourceTree = "<group>"; };
 		3328403B2D39FCC7008732E7 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/LaunchScreen.strings"; sourceTree = "<group>"; };
 		3328403C2D39FCC7008732E7 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		337C08312D57078A0036F5F6 /* TZImageUploadOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TZImageUploadOperation.h; sourceTree = "<group>"; };
+		337C08322D57078A0036F5F6 /* TZImageUploadOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TZImageUploadOperation.m; sourceTree = "<group>"; };
 		338D6AE32D35F5B20092589C /* LGPhotoPickerBrowserPhoto.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LGPhotoPickerBrowserPhoto.h; sourceTree = "<group>"; };
 		338D6AE42D35F5B20092589C /* LGPhotoPickerBrowserPhoto.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LGPhotoPickerBrowserPhoto.m; sourceTree = "<group>"; };
 		338D6AE52D35F5B20092589C /* LGPhotoRect.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LGPhotoRect.h; sourceTree = "<group>"; };
@@ -313,6 +316,16 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		337C08332D57078A0036F5F6 /* TZImagePicker */ = {
+			isa = PBXGroup;
+			children = (
+				337C08312D57078A0036F5F6 /* TZImageUploadOperation.h */,
+				337C08322D57078A0036F5F6 /* TZImageUploadOperation.m */,
+			);
+			name = TZImagePicker;
+			path = SafetyBoxAlbum/TZImagePicker;
+			sourceTree = "<group>";
+		};
 		338D6AE22D35F5520092589C /* LGPhoto */ = {
 			isa = PBXGroup;
 			children = (
@@ -536,6 +549,7 @@
 		33F1B2CD2D33902800FFEFDA = {
 			isa = PBXGroup;
 			children = (
+				337C08332D57078A0036F5F6 /* TZImagePicker */,
 				33F1B2D82D33902800FFEFDA /* SafetyBoxAlbum */,
 				33F1B2F72D33902A00FFEFDA /* SafetyBoxAlbumTests */,
 				33F1B3012D33902A00FFEFDA /* SafetyBoxAlbumUITests */,
@@ -993,6 +1007,7 @@
 				338D6B7A2D35F5B20092589C /* ZLCameraImageView.m in Sources */,
 				338D6B5F2D35F5B20092589C /* LGPhotoPickerDatas.m in Sources */,
 				338D6B652D35F5B20092589C /* LGPhotoPickerCollectionViewCell.m in Sources */,
+				337C08342D57078A0036F5F6 /* TZImageUploadOperation.m in Sources */,
 				338D6B672D35F5B20092589C /* LGPhotoPickerGroupTableViewCell.m in Sources */,
 				338D6B642D35F5B20092589C /* LGPhotoPickerCollectionView.m in Sources */,
 				338D6B692D35F5B20092589C /* DACircularProgressView.m in Sources */,
