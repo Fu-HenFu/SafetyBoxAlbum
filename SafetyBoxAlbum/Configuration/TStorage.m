@@ -13,6 +13,7 @@
 #define NAME @"name"
 #define STATE @"state"
 #define PHOTO_COUNT @"photo_count"
+#define LASTEST_IMAGE_PATH @"lastest_image_path"
 
 #define PATH @"path"
 #define THUMB_PATH @"thumb_path"
@@ -119,6 +120,7 @@ static FMDatabaseQueue *_queue;
     albumObj.name = [rs stringForColumn:NAME];
     albumObj.state = [rs intForColumn:STATE];
     albumObj.photoCount = [rs intForColumn:PHOTO_COUNT];
+    albumObj.lastestImagePath = [rs stringForColumn:LASTEST_IMAGE_PATH];
     return albumObj;
     
 }
@@ -149,7 +151,7 @@ static FMDatabaseQueue *_queue;
  把ResultSet转为TPictureAudioObject对象
  */
 - (TPictureAudioObject *)getPictureAudioByResultSet:(FMResultSet *)rs {
-    TPictureAudioObject *pictureObj = [[TPictureAudioObject alloc]init];	
+    TPictureAudioObject *pictureObj = [[TPictureAudioObject alloc]init];
     [pictureObj setId:[rs intForColumn:ROWID]];
     [pictureObj setName:[rs stringForColumn:NAME]];
     [pictureObj setPath:[rs stringForColumn:PATH]];
@@ -178,5 +180,23 @@ static FMDatabaseQueue *_queue;
     }];
 }
 
+/// 更新Album表的封面照片地址
+/// - Parameter imagePath: 照片地址
+- (void)updateAlbumLastestImagePath:(NSString *)imagePath albumId:(NSInteger)albumId {
+
+    [_queue inDatabase:^(FMDatabase * _Nonnull db) {
+        NSString *sql = [NSString stringWithFormat:UpdateAlbumLastestImagePath, imagePath, albumId];
+        
+        BOOL flag = [db executeUpdate:sql];
+        if (!flag) {
+            NSLog(@"error*");
+        }
+    }];
+}
+
 @end
 
+
+///Users/lixiaodong/Library/Developer/CoreSimulator/Devices/ED3E65E6-19F0-4B80-89C6-3AAC04433E82/data/Containers/Data/Application/BD886511-3869-4B88-9FC4-AD44CD4DBD67/Documents/thumb/B6A55916-08E7-4ADA-AAF4-ED139FAF51D2_L0_001.PNG
+///
+////Users/lixiaodong/Library/Developer/CoreSimulator/Devices/ED3E65E6-19F0-4B80-89C6-3AAC04433E82/data/Containers/Data/Application/BD886511-3869-4B88-9FC4-AD44CD4DBD67/Documents/thumb/B6A55916-08E7-4ADA-AAF4-ED139FAF51D2_L0_001.PNG

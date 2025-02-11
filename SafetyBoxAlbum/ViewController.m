@@ -265,6 +265,9 @@ static NSString* const kCellConstant = @"CollectiveItem";
         cell.detailLabel.text = [NSString stringWithFormat:@"%ld个文件", albumObject.photoCount];
         // 其他配置代码
         cell.titleLabel.text = cell.albumName;
+        UIImage *image = [UIImage imageWithContentsOfFile:albumObject.lastestImagePath];
+        [cell.iconImageView setImage:image];
+        
         cell.delegate = self;
         return cell;
         

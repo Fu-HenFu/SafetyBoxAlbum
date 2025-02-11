@@ -68,7 +68,6 @@
     BOOL fakeFlag =[db executeUpdate:createFakeAlbumSQL];
     BOOL pictureFlag =[db executeUpdate:createPictureSQL];
     BOOL employerFlag =[db executeUpdate:createEmployerSQL];
-    [db executeUpdate:@"INSERT INTO t_schema_migrations (version) VALUES (?)", @2];
     [db executeUpdate:@"INSERT INTO t_album (name, state, type) VALUES ('主相册', 1, 1)"];
     [db executeUpdate:@"INSERT INTO t_album (name, state, type) VALUES ('回收站', 1, 2)"];
     
@@ -92,7 +91,7 @@
 /// - Parameter db: FMDatabase 实例
 - (BOOL)updateDatabase:(FMDatabase *)db databaseVersion:(NSInteger)currentVersion {
     BOOL success = YES;
-    NSInteger lastestVersion = 2;
+    NSInteger lastestVersion = 1;
     if (currentVersion < lastestVersion) {
         currentVersion++;
         
@@ -112,13 +111,11 @@
         default:
             break;
     }
-    if (!success) {
-        return success;
-    }
+
     
     // 更新数据库版本
     // 记录升级版本
-    success = [db executeUpdate:@"UPDATE t_schema_migrations SET version  = ?", @(2)];
+    success = [db executeUpdate:@"UPDATE t_schema_migrations SET version = ? WHERE id = ?", @2, @1];
     return success;
     
 }

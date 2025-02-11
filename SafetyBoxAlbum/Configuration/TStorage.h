@@ -30,6 +30,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (NSArray *)queryPicture:(NSInteger)state andAlbumId:(NSInteger)albumId;
 - (void)updateAlbumPhotoCount:(NSInteger)albumId;
+- (void)updateAlbumLastestImagePath:(NSString *)imagePath albumId:(NSInteger)albumId;
+
 @end
 
 NS_ASSUME_NONNULL_END

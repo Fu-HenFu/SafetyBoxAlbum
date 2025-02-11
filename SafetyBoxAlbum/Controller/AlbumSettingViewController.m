@@ -431,6 +431,12 @@
 
 }
 
+/// 更新Album表的封面照片地址
+/// - Parameter imagePath: 照片地址
+- (void)updateAlbumLastestImagePath:(NSString *)imagePath {
+    [self.storage updateAlbumLastestImagePath:imagePath albumId:self.albumId];
+}
+
 - (void)albumInfo:(NSInteger)albumId andAlbumName:(NSString *)albumName{
     self.albumId = albumId;
     self.albumName = albumName;
@@ -499,7 +505,7 @@
         NSData *thumbImageData = UIImagePNGRepresentation(thumbnailImage);
         [thumbImageData writeToFile:thumbFilePath atomically:YES];
             
-            NSLog(@"Image saved to %@", imagePath);
+        NSLog(@"Image saved to %@", imagePath);
             
         
         TPictureAudioObject *pictureObject = [[TPictureAudioObject alloc]init];
@@ -568,6 +574,7 @@
     NSString *imgIdentifier = @"";
     self.documentsPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) firstObject];
     
+    NSString *lastestImagePathStr = nil;
     TPictureAudioObject *pictureObject = NULL;
     for (int i = 0; i < assets.count; i++) {
         PHAsset *asset = assets[i];
@@ -586,8 +593,12 @@
         }
         //  把thumb 照片存入指定文件夹
         NSString *thumbImagePath = [thumbDirPah stringByAppendingPathComponent:imgIdentifier];
+        
         NSData *thumbImageData = UIImagePNGRepresentation(photos[i]);
         BOOL thumbFlag = [thumbImageData writeToFile:thumbImagePath atomically:YES];
+        if (thumbFlag) {
+            lastestImagePathStr = thumbImagePath;
+        }
 
         pictureObject = [[TPictureAudioObject alloc]init];
         
@@ -623,48 +634,11 @@
     //  update Album表
     NSInteger totalPhotoCount = self.dataArray.count + _selectedPhotos.count;
     [self updateAlbumPhotoCount:totalPhotoCount andAlbumId:self.albumId];
-
+    
+    [self updateAlbumLastestImagePath:lastestImagePathStr];
+    
 
 }
 
-//- (void)handleImageTap3:(TImageCollectionViewCell *)cell {
-//    CGFloat cellWidth = (self.screenWidth - 3 * 10) / 4;	
-//    
-//  
-//    
-////    if (CGRectEqualToRect(cell.frame, self.original ImageViewFrame)) {
-//        // 放大到全屏
-//        [UIView animateWithDuration:0.3 animations:^{
-//            view.frame = self.view.bounds;
-//            self.scrollView.contentSize = self.view.bounds.size; // 调整 contentSize 以支持滚动
-//        }];
-////    } else {
-////        // 恢复原状
-////        [UIView animateWithDuration:0.3 animations:^{
-////            view.frame = self.originalImageViewFrame;
-////            self.scrollView.contentSize = self.view.bounds.size; // 恢复 contentSize
-////        }];
-////    }
-//
-//}
-//
-//- (void)handleImageTap:(UITapGestureRecognizer *)sender {
-//    UIView *view = sender.view;
-// 
-//    // 切换到全屏模式或恢复原状
-//    if (CGRectEqualToRect(view.frame, self.originalImageViewFrame)) {
-//        // 放大到全屏
-//        [UIView animateWithDuration:0.3 animations:^{
-//            view.frame = self.view.bounds;
-//            self.scrollView.contentSize = self.view.bounds.size; // 调整 contentSize 以支持滚动
-//        }];
-//    } else {
-//        // 恢复原状
-//        [UIView animateWithDuration:0.3 animations:^{
-//            view.frame = self.originalImageViewFrame;
-//            self.scrollView.contentSize = self.view.bounds.size; // 恢复 contentSize
-//        }];
-//    }
-//}
 
 @end
