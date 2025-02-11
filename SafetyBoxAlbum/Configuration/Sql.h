@@ -20,6 +20,7 @@ static NSString *const createAlbumSQL = @"CREATE TABLE 't_album' ("
                                         @"'state'    INTEGER DEFAULT 1,"
                                         @"'type'    INTEGER DEFAULT 1, -- 1.普通相册;2.回收站\n"
                                         @"'photo_count' INTEGER DEFAULT 0,"
+                                        @"'lastest_image_path'    TEXT,"
                                         @"PRIMARY KEY('id' AUTOINCREMENT)"
                                         @");";
 

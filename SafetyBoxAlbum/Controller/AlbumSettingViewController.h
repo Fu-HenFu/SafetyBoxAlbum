@@ -8,11 +8,9 @@
 #import <UIKit/UIKit.h>
 #import <Photos/Photos.h>
 
-#import "LGPhoto/Classes/LGPhoto.h"
+typedef void (^UpdateAlbumCountBlock)(NSInteger count, UIImage *lastestImage);
 
-typedef void (^UpdateAlbumCountBlock)(NSInteger count);
-
-@interface AlbumSettingViewController : UIViewController <UIImagePickerControllerDelegate, UICollectionViewDataSource, UICollectionViewDelegate, LGPhotoPickerViewControllerDelegate,LGPhotoPickerBrowserViewControllerDataSource,LGPhotoPickerBrowserViewControllerDelegate>
+@interface AlbumSettingViewController : UIViewController <UIImagePickerControllerDelegate, UICollectionViewDataSource, UICollectionViewDelegate>
 
 @property (nonatomic, copy) UpdateAlbumCountBlock updateAlbumCountBlock;
 - (instancetype)initWithAlbumId:(NSInteger)albumId andAlbumName:(NSString *)albumName;

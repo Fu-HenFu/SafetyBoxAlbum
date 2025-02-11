@@ -15,14 +15,11 @@ PODS:
   - AFNetworking/UIKit (4.0.1):
     - AFNetworking/NSURLSession
   - CLPhotoCrop (0.1.4)
-  - DACircularProgress (2.3.1)
   - FMDB (2.7.12):
     - FMDB/standard (= 2.7.12)
   - FMDB/Core (2.7.12)
   - FMDB/standard (2.7.12):
     - FMDB/Core
-  - JLDualCircularProgressView (1.0):
-    - DACircularProgress
   - LFAssetExportSession (1.0.3)
   - LFFilterSuite (1.0.3):
     - LFAssetExportSession
@@ -89,7 +86,6 @@ DEPENDENCIES:
   - AFNetworking (~> 4.0.1)
   - CLPhotoCrop (~> 0.1.4)
   - FMDB (~> 2.7.12)
-  - JLDualCircularProgressView (~> 1.0)
   - LFImagePickerController/LFMediaEdit
   - Masonry (~> 1.1.0)
   - SCLAlertView-Objective-C
@@ -100,9 +96,7 @@ SPEC REPOS:
   trunk:
     - AFNetworking
     - CLPhotoCrop
-    - DACircularProgress
     - FMDB
-    - JLDualCircularProgressView
     - LFAssetExportSession
     - LFFilterSuite
     - LFImagePickerController
@@ -115,9 +109,7 @@ SPEC REPOS:
 SPEC CHECKSUMS:
   AFNetworking: 3bd23d814e976cd148d7d44c3ab78017b744cd58
   CLPhotoCrop: 9e7b99a9d1722f32126c67afb4fe7c74f737b9c0
-  DACircularProgress: 4dd437c0fc3da5161cb289e07ac449493d41db71
   FMDB: 728731dd336af3936ce00f91d9d8495f5718a0e6
-  JLDualCircularProgressView: f98543f3d8aea84f4ae732ec3fe66a1955ca706f
   LFAssetExportSession: c1e60bb85962bba9ff78e4a1d7a29919ec2e5540
   LFFilterSuite: 522f6a3d94ee66528b7db5b34a9b84312b882de4
   LFImagePickerController: dc2eab1d85e519c7a708dbf3a14e4e255bf3645b
@@ -127,6 +119,6 @@ SPEC CHECKSUMS:
   SDWebImage: 73c6079366fea25fa4bb9640d5fb58f0893facd8
   TZImagePickerController: d084a7b97c82d387e7669dd86dc9a9057500aacf
 
-PODFILE CHECKSUM: e57d77e10821aba0777fe2391ef2217f1ebde2a0
+PODFILE CHECKSUM: cb0d1fb6d71d00ceae171a899f1e14abe1ff3e29
 
 COCOAPODS: 1.16.2

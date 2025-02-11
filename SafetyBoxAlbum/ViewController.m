@@ -361,8 +361,9 @@ static NSString* const kCellConstant = @"CollectiveItem";
     
     AlbumSettingViewController *controller = [[AlbumSettingViewController alloc]initWithAlbumId:cell.albumId andAlbumName:cell.albumName];
 //    [controller albumInfo:cell.albumId andAlbumName:cell.albumName];
-    controller.updateAlbumCountBlock = ^(NSInteger count) {
+    controller.updateAlbumCountBlock = ^(NSInteger count, UIImage *image) {
         [cell.detailLabel setText:[NSString stringWithFormat:@"%ld个文件", count]];
+        [cell.iconImageView setImage:image];
     };
     controller.navigationItem.titleView = titleView;
     self.navigationItem.backBarButtonItem = [[UIBarButtonItem alloc]initWithTitle:@"相簿" style:UIBarButtonItemStylePlain target:nil action:nil];

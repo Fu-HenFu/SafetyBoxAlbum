@@ -46,7 +46,7 @@
     UITapGestureRecognizer *tapGestureRecognize = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(labelTapped:)];
     [self.iconImageView addGestureRecognizer:tapGestureRecognize];
     
-    self.iconImageView.contentMode = UIViewContentModeScaleAspectFit;
+    self.iconImageView.contentMode = UIViewContentModeScaleAspectFill;
     [self.contentView addSubview:self.iconImageView];
     
     self.titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 30, 30)];

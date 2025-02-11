@@ -87,6 +87,9 @@ static FMDatabaseQueue *_queue;
         NSString *sql = [NSString stringWithFormat:UpdateAlbumPhotoCountSQL, photoCount, albumId];
         
         BOOL flag = [db executeUpdate:sql];
+        if (flag) {
+            NSLog(@"error");
+        }
         
     }];
     return YES;
@@ -146,7 +149,7 @@ static FMDatabaseQueue *_queue;
  把ResultSet转为TPictureAudioObject对象
  */
 - (TPictureAudioObject *)getPictureAudioByResultSet:(FMResultSet *)rs {
-    TPictureAudioObject *pictureObj = [[TPictureAudioObject alloc]init];
+    TPictureAudioObject *pictureObj = [[TPictureAudioObject alloc]init];	
     [pictureObj setId:[rs intForColumn:ROWID]];
     [pictureObj setName:[rs stringForColumn:NAME]];
     [pictureObj setPath:[rs stringForColumn:PATH]];

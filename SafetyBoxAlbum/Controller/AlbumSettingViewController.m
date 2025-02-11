@@ -7,7 +7,6 @@
 
 #import "AlbumSettingViewController.h"
 #import "Masonry/Masonry.h"
-#import "LGPhoto/Classes/LGPhoto.h"
 #import "TImageCollectionViewCell.h"
 #import "TCreatePhotoView.h"
 #import "TDeleteView.h"
@@ -17,6 +16,8 @@
 #import "TPictureDetailViewController.h"
 #import <TZImagePickerController/TZImagePickerController.h>
 #import "TZImagePicker/TZImageUploadOperation.h"
+#import "Utils.h"
+
 @interface AlbumSettingViewController () <TZImagePickerControllerDelegate> {
     
     NSMutableArray *_selectedPhotos;
@@ -42,7 +43,6 @@
 @property (nonatomic, copy) NSArray *titleArray;
 @property (nonatomic, strong)NSMutableArray *LGPhotoPickerBrowserPhotoArray;
 @property (nonatomic, strong)NSMutableArray *LGPhotoPickerBrowserURLArray;
-@property (nonatomic, assign) LGShowImageType showType;
 
 @property (nonatomic, strong) NSMutableArray *assetsArray;
 @property (nonatomic, strong) NSMutableArray *imageUrlArray;
@@ -145,11 +145,7 @@
     // 初始化UIImagePickerController
     self.imagePickerController = [[UIImagePickerController alloc] init];
     self.imagePickerController.delegate = self;
-    
-//    [self prepareForPhotoBroswerWithImage];
-//    [self prepareForPhotoBroswerWithURL];
-    
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(chosenNotification:) name:PICKER_TAKE_DONE object:nil];
+
 }
 
 
@@ -158,7 +154,12 @@
     [super viewDidAppear:animated];
     
     // 重新从数据库获取数据
-    [self refetchDataFromDatabase];
+    [self.dataArray removeAllObjects];
+    [self.dataArray addObjectsFromArray:[self.storage queryPicture:USEFUL_STATE_TYPE andAlbumId:self.albumId]];
+    
+    [self.collectionView reloadData];
+    [self scrollToLastItem];
+//    [self refetchDataFromDatabase];
 }
 
 - (void)closeAction:(UIButton *)sender {
@@ -297,30 +298,6 @@
 
 }
 
-
-
-- (NSInteger)photoBrowser:(LGPhotoPickerBrowserViewController *)photoBrowser numberOfItemsInSection:(NSUInteger)section{
-    if (self.showType == LGShowImageTypeImageBroswer) {
-        return self.LGPhotoPickerBrowserPhotoArray.count;
-    } else if (self.showType == LGShowImageTypeImageURL) {
-        return self.LGPhotoPickerBrowserURLArray.count;
-    } else {
-        NSLog(@"非法数据源");
-        return 0;
-    }
-}
-
-- (id<LGPhotoPickerBrowserPhoto>)photoBrowser:(LGPhotoPickerBrowserViewController *)pickerBrowser photoAtIndexPath:(NSIndexPath *)indexPath{
-    if (self.showType == LGShowImageTypeImageBroswer) {
-        return [self.LGPhotoPickerBrowserPhotoArray objectAtIndex:indexPath.item];
-    } else if (self.showType == LGShowImageTypeImageURL) {
-        return [self.LGPhotoPickerBrowserURLArray objectAtIndex:indexPath.item];
-    } else {
-        NSLog(@"非法数据源");
-        return nil;
-    }
-}
-
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
     if ([segue.identifier isEqualToString:@"showDetail"]) {
         NSDictionary *info = (NSDictionary *)sender;
@@ -353,18 +330,6 @@
         
     }];
 
-}	
-
-
-
-- (void)presentPhotoPickerViewControllerWithStyle:(LGShowImageType)style {
-    LGPhotoPickerViewController *pickerVc = [[LGPhotoPickerViewController alloc] initWithShowType:style];
-    pickerVc.status = PickerViewShowStatusCameraRoll;
-    pickerVc.maxCount = 100;   // 最多能选9张图片
-    pickerVc.delegate = self;
-    pickerVc.nightMode = YES;//夜间模式
-    self.showType = style;
-    [pickerVc showPickerVc:self];
 }
 
 // 处理通知的方法
@@ -375,33 +340,6 @@
     NSUInteger insertIndex = 0;
     NSMutableArray *tempDataArray = [NSMutableArray array];
 
-
-}
-
-#pragma mark - LGPhotoPickerViewControllerDelegate
-
-- (void)pickerViewControllerDoneAsstes:(NSArray <LGPhotoAssets *> *)assets isOriginal:(BOOL)original{
-    
-    self.assetsArray = [NSMutableArray array];
-    [self.assetsArray addObjectsFromArray:assets];
-    
-    self.imageUrlArray = [NSMutableArray array];
-    for (LGPhotoAssets *asset in assets) {
-        NSURL *imageUrl = asset.assetURL;
-        
-        [self.imageUrlArray addObject:imageUrl];
-        UIImage *originImage = asset.originImage;
-        UIImage *thumbImage = asset.thumbImage;
-        
-    }
-    //  删除相册中的照片
-    [self excuteDeleteFromAlbum:nil];
-    
-    NSInteger num = (long)assets.count;
-    NSString *isOriginal = original? @"YES":@"NO";
-    
-    UIImage *image = assets[0].thumbImage;
-    NSString *message = @"这是一个自定义提示框！";
 
 }
 
@@ -442,97 +380,7 @@
     [self.successAlert showSuccess:@"完成" subTitle:[NSString stringWithFormat:@"已移入相册%@", self.albumName] closeButtonTitle:nil duration:0.0f];
 
 }
-
 /**
- 提示是否删除相册中的照片,并保存照片到本地
- /var/folders/f_/5xts1t615n76gp_0jdl9p79w0000gn/T/simulator_screenshot_FF760E0D-9CB4-47B0-93ED-6C830E051836.png */
-- (void)excuteDeleteFromAlbum:(UIButton *)sender {
-    
-    [self showWaiting];
-    
-    dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
-// 异步执行任务
-    dispatch_async(queue, ^{
-        [self translateAlbumIntoAppDir:self.assetsArray withImageInfo: self.imageUrlArray];
-//        if (self.imageUrlArray.count > 0) {
-//            // 提示用户是否删除相册中的照片
-//            [self askUserToDeletePhotoWithURL:self.imageUrlArray];
-//        }
-    });
-    
-
-}
-
-/**
- 把照片转移到app中的目录
- */
-- (void)translateAlbumIntoAppDir: (NSArray<LGPhotoAssets *> *)selectedImage withImageInfo: (NSArray *)urlArray {
-    
-    NSMutableArray *tempDataArray = [NSMutableArray array];
-    // 保存照片到沙盒
-    self.documentsPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) firstObject];
-
-    for (LGPhotoAssets *asset in selectedImage) {
-        
-        PHAsset *phasset = [PHAsset fetchAssetsWithALAssetURLs:@[asset.assetURL] options:nil].firstObject;
-        NSString *imgIdentifier = @"";
-        if (phasset) {
-            
-            imgIdentifier = [NSString stringWithFormat:@"%@.PNG", [phasset.localIdentifier stringByReplacingOccurrencesOfString:@"/" withString:@"_"]];
-            
-            NSString *imagePath = [self.documentsPath stringByAppendingPathComponent: imgIdentifier];
-            NSData *imageData = UIImagePNGRepresentation(asset.originImage); // 或者使用 UIImageJPEGRepresentation
-            BOOL flag = [imageData writeToFile:imagePath atomically:YES];
-            
-            NSString *thumbDirPah = [self.documentsPath stringByAppendingPathComponent: @"thumb"];
-            NSFileManager *fileManager = [NSFileManager defaultManager];
-            
-            if (![fileManager fileExistsAtPath:thumbDirPah]) {
-                NSError *error;
-                [fileManager createDirectoryAtPath:thumbDirPah withIntermediateDirectories:YES attributes:nil error:&error];
-                if (error) {
-                    NSLog(@"Error occur");
-                }
-            }
-            
-            NSString *thumbImagePath = [thumbDirPah stringByAppendingPathComponent:imgIdentifier];
-            NSData *thumbImageData = UIImagePNGRepresentation(asset.thumbImage);
-            BOOL flag2 = [thumbImageData writeToFile:thumbImagePath atomically:YES];
-            
-            //  照片转存成功
-            if (flag) {
-                TPictureAudioObject *pictureObject = [[TPictureAudioObject alloc]init];
-                [pictureObject setName:imgIdentifier];
-                [pictureObject setPath:imagePath];
-                [pictureObject setThumbPath:thumbImagePath];
-                [pictureObject setType: PICTURE_TYPE];
-                [pictureObject setState: USEFUL_STATE_TYPE];
-                [pictureObject setAlbumName: self.albumName];
-                [pictureObject setAlbumId: self.albumId];
-                [self addRecordInDB:pictureObject];
-                
-                [tempDataArray addObject:pictureObject];
-                
-            }
-            
-            NSLog(@" ImagePath %@", imagePath);
-        }
-        NSLog(@" imgggg %ld", [selectedImage indexOfObject:asset]);
-        if ([selectedImage indexOfObject:asset] == selectedImage.count - 1 ) {
-            NSInteger totalPhotoCount = self.dataArray.count + selectedImage.count;
-            [self updateAlbumPhotoCount:totalPhotoCount andAlbumId:self.albumId];
-        }
-    }
-    
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [self.waitingAlert hideView];
-        [self showSuccess];
-        [self updateCollectionViewDataArray:tempDataArray];
-    });
-    
-
-}
-
 - (void)updateCollectionViewDataArray:(NSMutableArray *)tempDataArray {
     int insertIndex = self.dataArray.count;
     @try {
@@ -555,7 +403,7 @@
         NSLog(@"Exception Occur %@", exception.description);
     }
 }
-
+*/
 - (void)updateCollectionViewDataArrayWithOnePhoto:(TPictureAudioObject *)pictureObject {
     int insertIndex = self.dataArray.count;
     [self.dataArray addObject:pictureObject];
@@ -567,9 +415,9 @@
          
             [self.collectionView insertItemsAtIndexPaths:indexPaths];
         } completion:^(BOOL finished) {
-            if (self.updateAlbumCountBlock) {
-                self.updateAlbumCountBlock(self.dataArray.count);
-            }
+//            if (self.updateAlbumCountBlock) {
+//                self.updateAlbumCountBlock(self.dataArray.count);
+//            }
         }];
 }
 
@@ -598,9 +446,9 @@
     [self.collectionView reloadData];
     [self scrollToLastItem];
     
-    if (self.updateAlbumCountBlock) {
-        self.updateAlbumCountBlock(self.dataArray.count);
-    }
+//    if (self.updateAlbumCountBlock) {
+//        self.updateAlbumCountBlock(self.dataArray.count);
+//    }
 }
 
 - (void)scrollToLastItem {
@@ -625,9 +473,73 @@
     [self presentViewController:imagePickerVc animated:YES completion:nil];
 }
 
+
+/// 使用照相机后,返回拍摄的照片
+- (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary<UIImagePickerControllerInfoKey,id> *)info {
+    
+    dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+    dispatch_async(queue, ^{
+        UIImage *image = info[UIImagePickerControllerOriginalImage];
+        
+        if (self.documentsPath.length == 0) {
+            self.documentsPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) firstObject];
+        }
+        
+        NSString *identifierStr = [NSString stringWithFormat:@"%@.PNG", generateUniqueString()];
+        NSString *imagePath = [self.documentsPath stringByAppendingPathComponent:identifierStr];
+            
+        NSData *imageData = UIImagePNGRepresentation(image);
+        [imageData writeToFile:imagePath atomically:YES];
+        
+        NSString *thumbFilePath = [[self.documentsPath stringByAppendingPathComponent:@"thumb"] stringByAppendingPathComponent:identifierStr];
+        
+        CGSize thumbnailSize = CGSizeMake(300, 300);
+        UIImage *thumbnailImage = [self resizeImage:image withSize:thumbnailSize];
+        
+        NSData *thumbImageData = UIImagePNGRepresentation(thumbnailImage);
+        [thumbImageData writeToFile:thumbFilePath atomically:YES];
+            
+            NSLog(@"Image saved to %@", imagePath);
+            
+        
+        TPictureAudioObject *pictureObject = [[TPictureAudioObject alloc]init];
+        [pictureObject setName:identifierStr];
+        [pictureObject setPath:imagePath];
+        [pictureObject setThumbPath:thumbFilePath];
+        [pictureObject setType:PICTURE_TYPE];
+        [pictureObject setState: USEFUL_STATE_TYPE];
+        [pictureObject setAlbumName: self.albumName];
+        [pictureObject setAlbumId: self.albumId];
+        [self addRecordInDB:pictureObject];
+        //  update Album表
+        NSInteger totalPhotoCount = self.dataArray.count + 1;
+        [self updateAlbumPhotoCount:totalPhotoCount andAlbumId:self.albumId];
+
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [picker dismissViewControllerAnimated:YES completion:nil];
+        });
+    });
+    
+}
+
+
+/// 为图片新建一个指定尺寸的新图片
+/// - Parameters:
+///   - image: 旧图片
+///   - size: 新图片的尺寸
+- (UIImage *)resizeImage:(UIImage *)image withSize:(CGSize)size {
+    UIGraphicsBeginImageContextWithOptions(size, NO, 0.0);
+    [image drawInRect:CGRectMake(0, 0, size.width, size.height)];
+    UIImage *resizedImage = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    return resizedImage;
+}
+
 #pragma mark - TZImagePickerControllerDelegate
 - (void)imagePickerController:(TZImagePickerController *)picker didFinishPickingPhotos:(NSArray<UIImage *> *)photos sourceAssets:(NSArray *)assets isSelectOriginalPhoto:(BOOL)isSelectOriginalPhoto infos:(NSArray<NSDictionary *> *)infos {
     
+    NSLog(@"info!!!!!!!!!!!! %@", infos);
     dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
     dispatch_async(queue, ^{
         [self movePhotoInAppDir:photos sourceAssets:assets isSelectOriginalPhoto:isSelectOriginalPhoto];
@@ -643,6 +555,10 @@
 }
 
 /// update 数据表,插入新的照片和更新照片总数
+/// - Parameters:
+///   - photos: 选中的uiimage 对象队列
+///   - assets: 选中的asset 对象队列
+///   - isSelectOriginalPhoto: 是否选择原图
 - (void)movePhotoInAppDir:(NSArray<UIImage *> *)photos  sourceAssets:(NSArray *)assets isSelectOriginalPhoto:(BOOL)isSelectOriginalPhoto {
     _selectedPhotos = [NSMutableArray arrayWithArray:photos];
     _selectedAssets = [NSMutableArray arrayWithArray:assets];
@@ -696,6 +612,12 @@
             
         }];
         
+        if (i == assets.count - 1) {
+            if (self.updateAlbumCountBlock) {
+                UIImage *image = [UIImage imageWithData:thumbImageData];
+                self.updateAlbumCountBlock(self.dataArray.count, image);
+            }
+        }
 
     }
     //  update Album表

@@ -25,18 +25,53 @@
         [queue inTransaction:^(FMDatabase *db, BOOL *rollback) {
             @try {
                 // 检查当前数据库版本
-                FMResultSet *rs = [db executeQuery:@"SELECT version FROM t_schema_migrations WHERE version = ?", @(1)];
+                FMResultSet *rs = [db executeQuery:@"SELECT version FROM t_schema_migrations; "];
                 if (![rs next]) {
-                    
-                    BOOL versionFlag = [db executeUpdate:createVersionSQL];
-                    BOOL contactFlag =[db executeUpdate:createContactSQL];
-                    BOOL albumFlag =[db executeUpdate:createAlbumSQL];
-                    BOOL fakeFlag =[db executeUpdate:createFakeAlbumSQL];
-                    BOOL pictureFlag =[db executeUpdate:createPictureSQL];
-                    BOOL employerFlag =[db executeUpdate:createEmployerSQL];
-                    [db executeUpdate:@"INSERT INTO t_album (name, state, type) VALUES ('主相册', 1, 1)"];
-                    [db executeUpdate:@"INSERT INTO t_album (name, state, type) VALUES ('回收站', 1, 2)"];
-                    
+                    BOOL success = [queue initDatabase:db];
+                    if (!success) {
+                        
+                        NSLog(@"记录升级版本失败");
+                        *rollback = YES;
+                        return;
+                    }
+                } else {
+                    NSInteger currentVersion = [rs intForColumn:@"version"];
+                    BOOL success = [queue updateDatabase:db databaseVersion:currentVersion];
+                    if (!success) {
+                        *rollback = YES;
+                        return;
+                    }
+                }
+            }
+            @catch (NSException *exception) {
+                NSLog(@"发生异常：%@", exception);
+                *rollback = YES;
+            }
+            @finally {
+                // code that will always be executed. Typically for cleanup.
+//                [db close];
+            }
+        }];
+    });
+
+    return queue;
+}
+
+
+/// 初始化数据库
+/// - Parameter db: FMDatabase
+- (BOOL)initDatabase:(FMDatabase *)db {
+    
+    BOOL versionFlag = [db executeUpdate:createVersionSQL];
+    BOOL contactFlag =[db executeUpdate:createContactSQL];
+    BOOL albumFlag =[db executeUpdate:createAlbumSQL];
+    BOOL fakeFlag =[db executeUpdate:createFakeAlbumSQL];
+    BOOL pictureFlag =[db executeUpdate:createPictureSQL];
+    BOOL employerFlag =[db executeUpdate:createEmployerSQL];
+    [db executeUpdate:@"INSERT INTO t_schema_migrations (version) VALUES (?)", @2];
+    [db executeUpdate:@"INSERT INTO t_album (name, state, type) VALUES ('主相册', 1, 1)"];
+    [db executeUpdate:@"INSERT INTO t_album (name, state, type) VALUES ('回收站', 1, 2)"];
+    
 //                    // 执行升级操作
 //                    BOOL success = [db executeUpdate:@"ALTER TABLE users ADD COLUMN email TEXT"];
 //                    if (!success) {
@@ -45,23 +80,46 @@
 //                        return;
 //                    }
 //
-                    // 记录升级版本
-                    BOOL success = [db executeUpdate:@"INSERT INTO t_schema_migrations (version) VALUES (?)", @(1)];
-                    if (!success) {
-                        NSLog(@"记录升级版本失败");
-                        *rollback = YES;
-                        return;
-                    }
-                    
-                }
-            }
-            @catch (NSException *exception) {
-                NSLog(@"发生异常：%@", exception);
-                *rollback = YES;
-            }
-        }];
-    });
+    // 记录升级版本
+    BOOL success = [db executeUpdate:@"INSERT INTO t_schema_migrations (version) VALUES (?)", @(1)];
+    if (!success) {
+        return NO;
+    }
+    return YES;
+}
 
-    return queue;
+/// 更新数据库
+/// - Parameter db: FMDatabase 实例
+- (BOOL)updateDatabase:(FMDatabase *)db databaseVersion:(NSInteger)currentVersion {
+    BOOL success = YES;
+    NSInteger lastestVersion = 2;
+    if (currentVersion < lastestVersion) {
+        currentVersion++;
+        
+        success = [self performUpgradeStepForVersion:currentVersion database:db];
+    }
+    
+    return success;
+}
+
+- (BOOL)performUpgradeStepForVersion:(NSInteger)version database:(FMDatabase *)db {
+    BOOL success = YES;
+    switch (version) {
+        case 2:
+            success = [db executeUpdate:@"ALTER TABLE t_album ADD COLUMN lastest_image_path TEXT;"];
+            break;
+            
+        default:
+            break;
+    }
+    if (!success) {
+        return success;
+    }
+    
+    // 更新数据库版本
+    // 记录升级版本
+    success = [db executeUpdate:@"UPDATE t_schema_migrations SET version  = ?", @(2)];
+    return success;
+    
 }
 @end
