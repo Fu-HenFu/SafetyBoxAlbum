@@ -413,6 +413,7 @@
         
             [indexPaths addObject:[NSIndexPath indexPathForItem:insertIndex inSection:0]];
          
+        
             [self.collectionView insertItemsAtIndexPaths:indexPaths];
         } completion:^(BOOL finished) {
 //            if (self.updateAlbumCountBlock) {
@@ -526,6 +527,7 @@
             [picker dismissViewControllerAnimated:YES completion:nil];
         });
     });
+    NSLog(@"狗窝饿");
     
 }
 
@@ -540,6 +542,7 @@
     UIImage *resizedImage = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
     return resizedImage;
+    
 }
 
 #pragma mark - TZImagePickerControllerDelegate
@@ -596,8 +599,9 @@
         
         NSData *thumbImageData = UIImagePNGRepresentation(photos[i]);
         BOOL thumbFlag = [thumbImageData writeToFile:thumbImagePath atomically:YES];
+        NSString *thumPath = [NSString stringWithFormat:@"thumb/%@", imgIdentifier];
         if (thumbFlag) {
-            lastestImagePathStr = thumbImagePath;
+            lastestImagePathStr = thumPath;
         }
 
         pictureObject = [[TPictureAudioObject alloc]init];
@@ -608,8 +612,8 @@
             BOOL originFlag = [imageData writeToFile:imagePath atomically:YES];
             
             [pictureObject setName:imgIdentifier];
-            [pictureObject setPath:imagePath];
-            [pictureObject setThumbPath:thumbImagePath];
+            [pictureObject setPath:imgIdentifier];  //  使用image的identifier作为文件名
+            [pictureObject setThumbPath:thumPath];
             [pictureObject setType:PICTURE_TYPE];
             [pictureObject setState: USEFUL_STATE_TYPE];
             [pictureObject setAlbumName: self.albumName];
@@ -619,16 +623,20 @@
             
             dispatch_async(dispatch_get_main_queue(), ^{
                 [self updateCollectionViewDataArrayWithOnePhoto:pictureObject];
+                if (i == assets.count - 1) {
+                    if (self.updateAlbumCountBlock) {
+  
+                            UIImage *image = [UIImage imageWithData:thumbImageData];
+                            self.updateAlbumCountBlock(self.dataArray.count, image);
+                            
+                        
+                    }
+                }
             });
             
         }];
         
-        if (i == assets.count - 1) {
-            if (self.updateAlbumCountBlock) {
-                UIImage *image = [UIImage imageWithData:thumbImageData];
-                self.updateAlbumCountBlock(self.dataArray.count, image);
-            }
-        }
+        
 
     }
     //  update Album表

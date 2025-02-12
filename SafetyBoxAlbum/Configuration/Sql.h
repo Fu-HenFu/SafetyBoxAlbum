@@ -75,3 +75,4 @@ static NSString *const QueryPictureWithAlbumIdSQL = @"SELECT * FROM t_picture_vi
 static NSString *const QueryAlbumPhotoCount = @"SELECT photo_count FROM t_album WHERE id = %d";
 static NSString *const UpdateAlbumLastestImagePath = @"UPDATE t_album SET lastest_image_path = '%@' WHERE id = %d";
 
+		

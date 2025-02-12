@@ -12,7 +12,9 @@
 
 static NSString* const kCellConstant = @"CollectiveItem";
 
-@interface ViewController ()
+@interface ViewController () {
+    NSString *_documentPath;
+}
 
 @end
 
@@ -40,6 +42,7 @@ static NSString* const kCellConstant = @"CollectiveItem";
 - (void)viewDidLoad {
     [super viewDidLoad];
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    _documentPath = paths.firstObject;
     
     UIColor *dynamicColor = [UIColor colorWithDynamicProvider:^UIColor * _Nonnull(UITraitCollection * _Nonnull traitCollection) {
         if (traitCollection.userInterfaceStyle == UIUserInterfaceStyleDark) {
@@ -263,10 +266,18 @@ static NSString* const kCellConstant = @"CollectiveItem";
         cell.albumName = albumObject.name;
         cell.albumId = albumObject.id;
         cell.detailLabel.text = [NSString stringWithFormat:@"%ld个文件", albumObject.photoCount];
+        
         // 其他配置代码
         cell.titleLabel.text = cell.albumName;
-        UIImage *image = [UIImage imageWithContentsOfFile:albumObject.lastestImagePath];
-        [cell.iconImageView setImage:image];
+        UIImage *thumbImage = nil;
+        if (albumObject.lastestImagePath == nil) {
+            thumbImage = [UIImage imageNamed:@"albumDefault"];
+        } else {
+            NSString *thumbPath = [_documentPath stringByAppendingPathComponent:albumObject.lastestImagePath];
+            thumbImage = [UIImage imageWithContentsOfFile:thumbPath];
+        }
+        
+        [cell.iconImageView setImage:thumbImage];
         
         cell.delegate = self;
         return cell;
@@ -281,6 +292,7 @@ static NSString* const kCellConstant = @"CollectiveItem";
         
         // 其他配置代码
         cell.titleLabel.text = cell.albumName;
+        [cell.iconImageView setImage:[UIImage imageNamed:@"garbage"]];
         
         cell.delegate = self;
         return cell;
@@ -294,6 +306,17 @@ static NSString* const kCellConstant = @"CollectiveItem";
         cell.detailLabel.text = [NSString stringWithFormat:@"%ld个文件", albumObject.photoCount];
         // 其他配置代码
         cell.titleLabel.text = albumObject.name;
+        
+        
+        UIImage *thumbImage = nil;
+        if (albumObject.lastestImagePath == nil) {
+            thumbImage = [UIImage imageNamed:@"albumDefault"];
+        } else {
+            NSString *thumbPath = [_documentPath stringByAppendingPathComponent:albumObject.lastestImagePath];
+            thumbImage = [UIImage imageWithContentsOfFile:thumbPath];
+        }
+        
+        [cell.iconImageView setImage:thumbImage];
         cell.delegate = self;
         
         return cell;
@@ -365,8 +388,10 @@ static NSString* const kCellConstant = @"CollectiveItem";
     AlbumSettingViewController *controller = [[AlbumSettingViewController alloc]initWithAlbumId:cell.albumId andAlbumName:cell.albumName];
 //    [controller albumInfo:cell.albumId andAlbumName:cell.albumName];
     controller.updateAlbumCountBlock = ^(NSInteger count, UIImage *image) {
+        self.dataArray = [NSMutableArray arrayWithArray:[self.storage queryAlbum:1]];
         [cell.detailLabel setText:[NSString stringWithFormat:@"%ld个文件", count]];
         [cell.iconImageView setImage:image];
+        
     };
     controller.navigationItem.titleView = titleView;
     self.navigationItem.backBarButtonItem = [[UIBarButtonItem alloc]initWithTitle:@"相簿" style:UIBarButtonItemStylePlain target:nil action:nil];
