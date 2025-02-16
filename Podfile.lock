@@ -76,6 +76,7 @@ PODS:
   - SDWebImage (5.20.0):
     - SDWebImage/Core (= 5.20.0)
   - SDWebImage/Core (5.20.0)
+  - THPinViewController (1.2.6)
   - TZImagePickerController (3.8.8):
     - TZImagePickerController/Basic (= 3.8.8)
     - TZImagePickerController/Location (= 3.8.8)
@@ -90,6 +91,7 @@ DEPENDENCIES:
   - Masonry (~> 1.1.0)
   - SCLAlertView-Objective-C
   - SDWebImage (~> 5.20.0)
+  - THPinViewController
   - TZImagePickerController
 
 SPEC REPOS:
@@ -104,6 +106,7 @@ SPEC REPOS:
     - Masonry
     - SCLAlertView-Objective-C
     - SDWebImage
+    - THPinViewController
     - TZImagePickerController
 
 SPEC CHECKSUMS:
@@ -117,8 +120,9 @@ SPEC CHECKSUMS:
   Masonry: 678fab65091a9290e40e2832a55e7ab731aad201
   SCLAlertView-Objective-C: c17253cf0ce7543de3f9e4c7bd9341c1dd55c175
   SDWebImage: 73c6079366fea25fa4bb9640d5fb58f0893facd8
+  THPinViewController: e0dc717a61c8a0a0f251764da26b9ca8a4fd2ec1
   TZImagePickerController: d084a7b97c82d387e7669dd86dc9a9057500aacf
 
-PODFILE CHECKSUM: cb0d1fb6d71d00ceae171a899f1e14abe1ff3e29
+PODFILE CHECKSUM: a6a2f9b53b202c938733a4f316d3fd15c848b601
 
 COCOAPODS: 1.16.2

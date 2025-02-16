@@ -225,6 +225,7 @@
 使用照相机拍照
  */
 - (void)takePhoto:(id)sender {
+    [self dismissPopupView];
     // 检查相机是否可用
     if ([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera]) {
         // 设置 sourceType 为相机
@@ -484,8 +485,8 @@
 /// 使用照相机后,返回拍摄的照片
 - (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary<UIImagePickerControllerInfoKey,id> *)info {
     
-    dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
-    dispatch_async(queue, ^{
+//    dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+//    dispatch_async(queue, ^{
         UIImage *image = info[UIImagePickerControllerOriginalImage];
         
         if (self.documentsPath.length == 0) {
@@ -523,10 +524,10 @@
         [self updateAlbumPhotoCount:totalPhotoCount andAlbumId:self.albumId];
 
         
-        dispatch_async(dispatch_get_main_queue(), ^{
+//        dispatch_async(dispatch_get_main_queue(), ^{
             [picker dismissViewControllerAnimated:YES completion:nil];
-        });
-    });
+//        });
+//    });
     NSLog(@"狗窝饿");
     
 }

@@ -24,10 +24,10 @@ NSString *generateUniqueString(void) {
     
     // 如果需要更长的字符串，可以使用随机字符填充
     NSMutableString *longUniqueString = [uniqueString mutableCopy];
-    for (NSInteger i = 0; i < 50; i++) { // 添加50个随机字符
-        unichar randomChar = arc4random_uniform(94) + 33; // 生成33到126之间的ASCII字符
-        [longUniqueString appendFormat:@"%C", randomChar];
-    }
+//    for (NSInteger i = 0; i < 50; i++) { // 添加50个随机字符
+//        unichar randomChar = arc4random_uniform(94) + 33; // 生成33到126之间的ASCII字符
+//        [longUniqueString appendFormat:@"%C", randomChar];
+//    }
     
     return [longUniqueString copy];
 }

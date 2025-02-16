@@ -13,6 +13,7 @@
 		332840392D39FC7A008732E7 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 332840382D39FC7A008732E7 /* Localizable.strings */; };
 		337C08342D57078A0036F5F6 /* TZImageUploadOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 337C08322D57078A0036F5F6 /* TZImageUploadOperation.m */; };
 		337C083B2D58D47D0036F5F6 /* Utils.m in Sources */ = {isa = PBXBuildFile; fileRef = 337C083A2D58D47D0036F5F6 /* Utils.m */; };
+		337C083E2D5C8E810036F5F6 /* TEmailSettingViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 337C083D2D5C8E810036F5F6 /* TEmailSettingViewController.m */; };
 		338D6B962D363CA10092589C /* TImageCollectionViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 338D6B952D363CA10092589C /* TImageCollectionViewCell.m */; };
 		338D6B992D364C4B0092589C /* TDeleteView.m in Sources */ = {isa = PBXBuildFile; fileRef = 338D6B982D364C4B0092589C /* TDeleteView.m */; };
 		33F1B2DB2D33902800FFEFDA /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 33F1B2DA2D33902800FFEFDA /* AppDelegate.m */; };
@@ -73,6 +74,8 @@
 		337C08322D57078A0036F5F6 /* TZImageUploadOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TZImageUploadOperation.m; sourceTree = "<group>"; };
 		337C08392D58D47D0036F5F6 /* Utils.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Utils.h; sourceTree = "<group>"; };
 		337C083A2D58D47D0036F5F6 /* Utils.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Utils.m; sourceTree = "<group>"; };
+		337C083C2D5C8E810036F5F6 /* TEmailSettingViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TEmailSettingViewController.h; sourceTree = "<group>"; };
+		337C083D2D5C8E810036F5F6 /* TEmailSettingViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TEmailSettingViewController.m; sourceTree = "<group>"; };
 		338D6B942D363CA10092589C /* TImageCollectionViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TImageCollectionViewCell.h; sourceTree = "<group>"; };
 		338D6B952D363CA10092589C /* TImageCollectionViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TImageCollectionViewCell.m; sourceTree = "<group>"; };
 		338D6B972D364C4B0092589C /* TDeleteView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TDeleteView.h; sourceTree = "<group>"; };
@@ -278,6 +281,8 @@
 				33F1B3282D339C7C00FFEFDA /* AlbumSettingViewController.m */,
 				332840262D3906F7008732E7 /* TPictureDetailViewController.h */,
 				332840272D3906F7008732E7 /* TPictureDetailViewController.m */,
+				337C083C2D5C8E810036F5F6 /* TEmailSettingViewController.h */,
+				337C083D2D5C8E810036F5F6 /* TEmailSettingViewController.m */,
 			);
 			path = Controller;
 			sourceTree = "<group>";
@@ -569,6 +574,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				33F1B31B2D33993500FFEFDA /* TStorage.m in Sources */,
+				337C083E2D5C8E810036F5F6 /* TEmailSettingViewController.m in Sources */,
 				33F1B2EF2D33902A00FFEFDA /* main.m in Sources */,
 				33F1B2E12D33902800FFEFDA /* ViewController.m in Sources */,
 				332840252D37A959008732E7 /* TPictureAudioObject.m in Sources */,
