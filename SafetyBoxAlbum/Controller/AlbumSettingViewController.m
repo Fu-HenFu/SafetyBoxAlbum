@@ -14,19 +14,27 @@
 #import "GlobalDefine.h"
 #import "TStorage.h"
 #import "TPictureDetailViewController.h"
+#import "TMultiView.h"
+
+#import <SCLAlertView.h>
 #import <TZImagePickerController/TZImagePickerController.h>
 #import "TZImagePicker/TZImageUploadOperation.h"
 #import "Utils.h"
+#import "TSelectAlbumViewController.h"
+
+#define EditBottomViewHeight 80
 
 @interface AlbumSettingViewController () <TZImagePickerControllerDelegate> {
     
     NSMutableArray *_selectedPhotos;
     NSMutableArray *_selectedAssets;
+    NSMutableArray *_selectedEditAssets;
     BOOL _isSelectOriginalPhoto;
     BOOL _isAllowEditVideo;
     
     CGFloat _itemWH;
     CGFloat _margin;
+    BOOL _isEdit;
 }
 
 @property (nonatomic, strong) NSOperationQueue *operationQueue;
@@ -56,9 +64,12 @@
 
 @property (nonatomic, strong) SCLAlertView *waitingAlert;
 @property (nonatomic, strong) SCLAlertView *successAlert;
+@property (nonatomic, strong) UIBarButtonItem *rightItem;
+
+@property (nonatomic, strong) TMultiView *editBottomView;
 
 
-
+@property (nonatomic, strong) TSelectAlbumViewController *selectedAlbumController;
 
 @end
 
@@ -72,8 +83,11 @@
         self.dataArray = [NSMutableArray array];
         self.originImageArray = [NSMutableArray array];
         self.fullResolutionImage = [NSMutableArray array];
+        _isEdit = NO;
         self.albumId = albumId;
         self.albumName = albumName;
+        self.rightItem = [[UIBarButtonItem alloc]initWithTitle:@"选择" style:UIBarButtonItemStylePlain target:self action:@selector(multiplySelectAction:)];
+        [self.navigationItem setRightBarButtonItem:self.rightItem];
         self.storage = [TStorage shareStorage];
         [self refetchDataFromDatabase];
 
@@ -103,6 +117,7 @@
     self.collectionView = [[UICollectionView alloc] initWithFrame:self.view.bounds collectionViewLayout:layout];
     self.collectionView.dataSource = self;
     self.collectionView.delegate = self;
+    
     self.collectionView.backgroundColor = [UIColor whiteColor];
     // 注册单元格类
     [self.collectionView registerClass:[TImageCollectionViewCell class] forCellWithReuseIdentifier:@"cellIdentifier"];
@@ -137,6 +152,8 @@
             }
             
         }];
+        
+        
     } @catch (NSException *exception) {
         // 捕获并处理异
         NSLog(@"Caught an exception: %@", exception);
@@ -146,6 +163,28 @@
     self.imagePickerController = [[UIImagePickerController alloc] init];
     self.imagePickerController.delegate = self;
 
+    
+    self.editBottomView = [[TMultiView alloc]initWithFrame:CGRectMake(0, 0, _screenWidth, 0)];
+    
+    [self.view addSubview:self.editBottomView];
+    
+    [self.editBottomView setBackgroundColor:[UIColor colorWithWhite:244/255.0 alpha:1]];
+    [self.editBottomView.moveButton addTarget:self action:@selector(movePictureToAnotherAlbum:) forControlEvents:UIControlEventTouchUpInside];
+    [self.editBottomView mas_makeConstraints:^(MASConstraintMaker *make) {
+                if (@available(iOS 11.0, *)) {
+                    // 对于iOS 11及以上版本，使用safeAreaLayoutGuide
+                    make.top .equalTo(self.collectionView.mas_bottom).offset(0);
+                    make.centerX.equalTo(self.view.mas_centerX);
+                    make.height.equalTo(@(EditBottomViewHeight));
+                    make.width.equalTo(@(self.screenWidth));
+                } else {
+                    // 对于iOS 11以下版本，使用topLayoutGuide和bottomLayoutGuide
+                    make.top.equalTo(self.mas_topLayoutGuideBottom);
+                    make.left.and.right.equalTo(self.view);
+                    make.bottom.equalTo(self.mas_bottomLayoutGuideTop);
+                }
+    }];
+    
 }
 
 
@@ -252,13 +291,15 @@
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
     TImageCollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"cellIdentifier" forIndexPath:indexPath];
     
+    
     // 设置单元格的图片
     NSString *imageName = [self.dataArray[indexPath.item] name];
+    [cell setMultiSelected:_isEdit];
     
     if (imageName) {
         NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
         NSString *documentsDirectory = [paths firstObject];
-        NSString *filePath = [[documentsDirectory stringByAppendingPathComponent:@"thumb"] stringByAppendingPathComponent:imageName];
+        NSString *filePath = [[documentsDirectory stringByAppendingPathComponent:@"thumb"] stringByAppendingPathComponent:imageName];	
         UIImage *cellImage = [UIImage imageNamed:filePath];
         cell.imageView.image = cellImage;
 
@@ -274,6 +315,18 @@
     NSLog(@"Selected item at index path: %@", indexPath);
     
     TImageCollectionViewCell *cell = (TImageCollectionViewCell *)[collectionView cellForItemAtIndexPath:indexPath];
+    
+    if (_isEdit) {
+        if ([_selectedEditAssets containsObject: self.dataArray[indexPath.item]]) {
+            [_selectedEditAssets removeObject:self.dataArray[indexPath.item]];
+            [cell selectedImage:NO];
+            return;
+        }
+        [_selectedEditAssets addObject: self.dataArray[indexPath.item]];
+        [cell selectedImage:YES];
+        return;
+    }
+    
     
     // 设置单元格的图片
     NSString *imageName = [self.dataArray[indexPath.item] name];
@@ -297,6 +350,16 @@
         }];
     }
 
+}
+
+- (void)collectionView:(UICollectionView *)collectionView didDeselectItemAtIndexPath:(NSIndexPath *)indexPath {
+    
+    TImageCollectionViewCell *cell = (TImageCollectionViewCell *)[collectionView cellForItemAtIndexPath:indexPath];
+    if (_isEdit) {
+        [_selectedEditAssets removeObject:self.dataArray[indexPath.item]];
+        [cell selectedImage:NO];
+    }
+    NSLog(@"***********************");
 }
 
 - (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
@@ -362,7 +425,7 @@
  
 }
 
-- (void)showSuccess {
+- (void)showSuccess:(nullable NSString *)albumName {
     [self scrollToLastItem];
     self.successAlert = [[SCLAlertView alloc] initWithNewWindow];
 
@@ -377,34 +440,15 @@
         }
     }];
     
-    [NSString stringWithFormat:@"移入%@完成", self.albumName];
-    [self.successAlert showSuccess:@"完成" subTitle:[NSString stringWithFormat:@"已移入相册%@", self.albumName] closeButtonTitle:nil duration:0.0f];
+    
+    [self.successAlert showSuccess:@"完成" subTitle:[NSString stringWithFormat:@"已移入相册%@", albumName] closeButtonTitle:nil duration:0.0f];
 
 }
-/**
-- (void)updateCollectionViewDataArray:(NSMutableArray *)tempDataArray {
-    int insertIndex = self.dataArray.count;
-    @try {
-        // 更新数据源
-        [self.dataArray insertObjects:tempDataArray atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(insertIndex, tempDataArray.count)]];
-        [self.collectionView performBatchUpdates:^{
-            NSMutableArray *indexPaths = [NSMutableArray array];
-            for (NSUInteger i = 0; i < tempDataArray.count; i++) {
-                [indexPaths addObject:[NSIndexPath indexPathForItem: insertIndex + i inSection:0]];
-            }
-            [self.collectionView insertItemsAtIndexPaths:indexPaths];
 
-        } completion:^(BOOL finished) {
 
-            if (self.updateAlbumCountBlock) {
-                self.updateAlbumCountBlock(self.dataArray.count);
-            }
-        }];
-    } @catch (NSException *exception) {
-        NSLog(@"Exception Occur %@", exception.description);
-    }
-}
-*/
+
+/// 更新collectionView的cell - 新增cell
+/// - Parameter pictureObject: 新增的TPictureAudio对象
 - (void)updateCollectionViewDataArrayWithOnePhoto:(TPictureAudioObject *)pictureObject {
     int insertIndex = self.dataArray.count;
     [self.dataArray addObject:pictureObject];
@@ -557,8 +601,8 @@
     });
     
 //    dispatch_async(dispatch_get_main_queue(), ^{
-        [self.waitingAlert hideView];
-        [self showSuccess];
+    [self.waitingAlert hideView];
+    [self showSuccess: self.albumName];
         
 //    });
     
@@ -626,11 +670,9 @@
                 [self updateCollectionViewDataArrayWithOnePhoto:pictureObject];
                 if (i == assets.count - 1) {
                     if (self.updateAlbumCountBlock) {
-  
-                            UIImage *image = [UIImage imageWithData:thumbImageData];
-                            self.updateAlbumCountBlock(self.dataArray.count, image);
-                            
-                        
+                        UIImage *image = [UIImage imageWithData:thumbImageData];
+                        self.updateAlbumCountBlock(self.dataArray.count, image);
+
                     }
                 }
             });
@@ -640,7 +682,7 @@
         
 
     }
-    //  update Album表
+    //  update 源Album表的照片总数
     NSInteger totalPhotoCount = self.dataArray.count + _selectedPhotos.count;
     [self updateAlbumPhotoCount:totalPhotoCount andAlbumId:self.albumId];
     
@@ -649,5 +691,134 @@
 
 }
 
+
+/// 多选编辑按钮
+/// - Parameter button: 多选按钮
+- (void)multiplySelectAction:(UIBarButtonItem *)button {
+    if (!_isEdit) {
+        _isEdit = YES;
+        [self.rightItem setTitle:@"取消"];
+        [self displayEditBottomView];
+        [self.collectionView setAllowsMultipleSelection:YES];
+        [self.collectionView reloadData];
+        return;
+    }
+    
+    _isEdit = !_isEdit;
+    [_selectedEditAssets removeAllObjects];
+    [self.rightItem setTitle:@"选择"];
+    [self hideEditBottomView];
+    [self.collectionView setAllowsMultipleSelection:NO];
+    [self.collectionView reloadData];
+}
+
+- (void)displayEditBottomView {
+    _selectedEditAssets = [NSMutableArray array];
+    
+    [UIView animateWithDuration:0.3 delay:0 options:UIViewAnimationCurveEaseIn animations:^{
+            
+            CGFloat bottomSafeArea = 0;
+            if (@available(iOS 11.0, *)) {
+                bottomSafeArea = self.view.safeAreaInsets.bottom; // 获取 Safe Area 的底部高度
+            }
+            
+            CGRect editBottomRectFrame = self.editBottomView.frame;
+            editBottomRectFrame.origin.y = self.screenHeight - EditBottomViewHeight - bottomSafeArea;
+            self.editBottomView.frame = editBottomRectFrame;
+        } completion:^(BOOL finished) {
+            
+        }];
+
+}
+
+- (void)hideEditBottomView {
+    _isEdit = NO;
+    _selectedEditAssets = [NSMutableArray array];
+    [UIView animateWithDuration:0.3 animations:^{
+        CGRect editBottomRectFrame = self.editBottomView.frame;
+        editBottomRectFrame.origin.y = self.screenHeight;
+        self.editBottomView.frame = editBottomRectFrame;
+        } completion:^(BOOL finished) {
+                
+        }];
+}
+
+/// 移至按钮事件
+/// - Parameter sender: 对象
+- (void)movePictureToAnotherAlbum:(UIButton *)sender {
+    NSLog(@"click");
+    self.selectedAlbumController = [[TSelectAlbumViewController alloc]init];
+    [self.selectedAlbumController setModalTransitionStyle:UIModalPresentationFullScreen];
+    [self.selectedAlbumController setDelegate:self];
+    [self presentViewController:self.selectedAlbumController animated:YES completion:^{
+            
+    }];
+//    for (TPictureAudioObject *obj in _selectedEditAssets) {
+//        [self.storage updatePictureBelongAlbum:obj];
+//
+//    }
+//    [self showSuccess:@"完成" andSubTitle:@"照片已移至" andCloseBtnTitle:@""];
+}
+
+
+- (void)showSuccess:(NSString *)title andSubTitle:(NSString *)subTitle andCloseBtnTitle:(NSString *)closeTitle
+{
+
+    SCLAlertView *alert = [[SCLAlertView alloc] initWithNewWindow];
+    alert.soundURL = [NSURL fileURLWithPath:[NSString stringWithFormat:@"%@/right_answer.mp3", [NSBundle mainBundle].resourcePath]];
+
+    [alert showInfo:self title:title subTitle:subTitle closeButtonTitle:closeTitle duration:0.0f];
+
+}
+
+/// 选择相册,并确定后的代理方法
+/// - Parameter album: 目的相册ID
+- (void)selectedAlbum:(NSInteger)albumId andAlbumName:(nonnull NSString *)albumName andAlbumPhotoCount:(int)photoCount {
+    for (TPictureAudioObject *pictureObj in _selectedEditAssets) {
+        [pictureObj setAlbumId:albumId];
+        [pictureObj setAlbumName:albumName];
+        [self.storage updatePictureBelongAlbum:pictureObj andAlbumCount:photoCount];
+        //  更新目的相册照片总数
+        [self.storage updateAlbumPhotoCount:albumId];
+    }
+    TPictureAudioObject *lastobj = (TPictureAudioObject *)_selectedEditAssets.lastObject;
+    
+    if (self.documentsPath.length == 0) {
+        self.documentsPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) firstObject];
+    }
+    
+    
+    UIImage *destiationImage = [UIImage imageWithContentsOfFile: [self.documentsPath stringByAppendingPathComponent:lastobj.thumbPath]];
+    //  调用viewcontroller中的block,更新UI,相册中照片的总数
+    self.updateDestinationAlbumCountBlock(albumId, photoCount, destiationImage);
+    
+    //  更新Album表的lastest_image_path值
+    [self.storage updateAlbumLastestImagePath:[(TPictureAudioObject *)_selectedEditAssets.lastObject thumbPath] albumId:albumId];
+    
+    for (TPictureAudioObject *obj in _selectedEditAssets) {
+        if ([self.dataArray containsObject:obj]) {
+            [self.dataArray removeObject:obj];
+            [self.collectionView reloadData];
+        }
+    }
+    
+    //  更新原相册照片总数
+    [self.storage updateAlbumPhotoCount:_albumId andCount:self.dataArray.count - _selectedEditAssets.count];
+    if (self.updateAlbumCountBlock) {
+        
+        NSString *thumbPath = [self.documentsPath stringByAppendingPathComponent:[(TPictureAudioObject *)self.dataArray.lastObject thumbPath]];
+        
+        UIImage *image = [UIImage imageWithContentsOfFile:thumbPath];
+        self.updateAlbumCountBlock(self.dataArray.count, image);
+        [self updateAlbumLastestImagePath:[(TPictureAudioObject *)self.dataArray.lastObject thumbPath]];
+        
+    }
+    
+    
+    [self showSuccess: albumName];
+    
+    
+    
+}
 
 @end

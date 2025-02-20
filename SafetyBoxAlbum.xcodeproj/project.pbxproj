@@ -14,6 +14,8 @@
 		337C08342D57078A0036F5F6 /* TZImageUploadOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 337C08322D57078A0036F5F6 /* TZImageUploadOperation.m */; };
 		337C083B2D58D47D0036F5F6 /* Utils.m in Sources */ = {isa = PBXBuildFile; fileRef = 337C083A2D58D47D0036F5F6 /* Utils.m */; };
 		337C083E2D5C8E810036F5F6 /* TEmailSettingViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 337C083D2D5C8E810036F5F6 /* TEmailSettingViewController.m */; };
+		337C08882D62D2820036F5F6 /* TMultiView.m in Sources */ = {isa = PBXBuildFile; fileRef = 337C08872D62D2820036F5F6 /* TMultiView.m */; };
+		337C088B2D6439230036F5F6 /* TSelectAlbumViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 337C088A2D6439230036F5F6 /* TSelectAlbumViewController.m */; };
 		338D6B962D363CA10092589C /* TImageCollectionViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 338D6B952D363CA10092589C /* TImageCollectionViewCell.m */; };
 		338D6B992D364C4B0092589C /* TDeleteView.m in Sources */ = {isa = PBXBuildFile; fileRef = 338D6B982D364C4B0092589C /* TDeleteView.m */; };
 		33F1B2DB2D33902800FFEFDA /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 33F1B2DA2D33902800FFEFDA /* AppDelegate.m */; };
@@ -76,6 +78,10 @@
 		337C083A2D58D47D0036F5F6 /* Utils.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Utils.m; sourceTree = "<group>"; };
 		337C083C2D5C8E810036F5F6 /* TEmailSettingViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TEmailSettingViewController.h; sourceTree = "<group>"; };
 		337C083D2D5C8E810036F5F6 /* TEmailSettingViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TEmailSettingViewController.m; sourceTree = "<group>"; };
+		337C08862D62D2820036F5F6 /* TMultiView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TMultiView.h; sourceTree = "<group>"; };
+		337C08872D62D2820036F5F6 /* TMultiView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TMultiView.m; sourceTree = "<group>"; };
+		337C08892D6439230036F5F6 /* TSelectAlbumViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TSelectAlbumViewController.h; sourceTree = "<group>"; };
+		337C088A2D6439230036F5F6 /* TSelectAlbumViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TSelectAlbumViewController.m; sourceTree = "<group>"; };
 		338D6B942D363CA10092589C /* TImageCollectionViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TImageCollectionViewCell.h; sourceTree = "<group>"; };
 		338D6B952D363CA10092589C /* TImageCollectionViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TImageCollectionViewCell.m; sourceTree = "<group>"; };
 		338D6B972D364C4B0092589C /* TDeleteView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TDeleteView.h; sourceTree = "<group>"; };
@@ -283,6 +289,8 @@
 				332840272D3906F7008732E7 /* TPictureDetailViewController.m */,
 				337C083C2D5C8E810036F5F6 /* TEmailSettingViewController.h */,
 				337C083D2D5C8E810036F5F6 /* TEmailSettingViewController.m */,
+				337C08892D6439230036F5F6 /* TSelectAlbumViewController.h */,
+				337C088A2D6439230036F5F6 /* TSelectAlbumViewController.m */,
 			);
 			path = Controller;
 			sourceTree = "<group>";
@@ -306,6 +314,8 @@
 				33F1B3312D339CC100FFEFDA /* TCreatePhotoView.m */,
 				338D6B972D364C4B0092589C /* TDeleteView.h */,
 				338D6B982D364C4B0092589C /* TDeleteView.m */,
+				337C08862D62D2820036F5F6 /* TMultiView.h */,
+				337C08872D62D2820036F5F6 /* TMultiView.m */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -580,6 +590,7 @@
 				332840252D37A959008732E7 /* TPictureAudioObject.m in Sources */,
 				33F1B3342D339CC100FFEFDA /* TAlbumCollectionViewCell.m in Sources */,
 				33F1B31F2D3399B000FFEFDA /* TAlbumObject.m in Sources */,
+				337C088B2D6439230036F5F6 /* TSelectAlbumViewController.m in Sources */,
 				33F1B3362D339CC100FFEFDA /* AlbumHeaderView.m in Sources */,
 				33F1B3262D339B8C00FFEFDA /* EEToolbarCenterButtonOverlay.m in Sources */,
 				33F1B3352D339CC100FFEFDA /* TCreatePhotoView.m in Sources */,
@@ -591,6 +602,7 @@
 				33F1B3402D339D0F00FFEFDA /* TSettingTableViewCell.m in Sources */,
 				33F1B3252D339B8C00FFEFDA /* UIToolbar+EEToolbarCenterButton.m in Sources */,
 				33F1B2DB2D33902800FFEFDA /* AppDelegate.m in Sources */,
+				337C08882D62D2820036F5F6 /* TMultiView.m in Sources */,
 				338D6B992D364C4B0092589C /* TDeleteView.m in Sources */,
 				337C08342D57078A0036F5F6 /* TZImageUploadOperation.m in Sources */,
 				33F1B33A2D339CED00FFEFDA /* SettingViewController.m in Sources */,
@@ -793,9 +805,14 @@
 				GCC_PREPROCESSOR_DEFINITIONS = "$(inherited)";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = SafetyBoxAlbum/Info.plist;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Use your camera";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Use your microphone";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Use access your photo library";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "use you camera";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
@@ -824,9 +841,14 @@
 				GCC_PREPROCESSOR_DEFINITIONS = "$(inherited)";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = SafetyBoxAlbum/Info.plist;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Use your camera";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Use your microphone";
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Use access your photo library";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "use you camera";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;

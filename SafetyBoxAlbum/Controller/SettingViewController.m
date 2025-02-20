@@ -291,7 +291,7 @@
     NSLog(@"Custom view tapped in cell at row %ld", (long)indexPath.row);
     _selectedRow = indexPath.row;
     _selectedSection = indexPath.section;
-    [self showPassWordViewController];
+//    [self showPassWordViewController];
 }
 
 - (void)pinViewControllerDidDismissAfterPinEntryWasCancelled:(THPinViewController *)pinViewController {

@@ -12,6 +12,8 @@
 
 #define DB_PATH [NSString stringWithFormat:@"%@/%@.db", ST_DOCUMENT_DIRECTORY, ST_APP_NAME]
 
+#define LASTESTVERSION 2
+
 @implementation FMDatabaseQueue (SaftyBo)
 + (instancetype)shareInstense {
     
@@ -91,7 +93,7 @@
 /// - Parameter db: FMDatabase 实例
 - (BOOL)updateDatabase:(FMDatabase *)db databaseVersion:(NSInteger)currentVersion {
     BOOL success = YES;
-    NSInteger lastestVersion = 1;
+    NSInteger lastestVersion = LASTESTVERSION;
     if (currentVersion < lastestVersion) {
         currentVersion++;
         
@@ -104,8 +106,8 @@
 - (BOOL)performUpgradeStepForVersion:(NSInteger)version database:(FMDatabase *)db {
     BOOL success = YES;
     switch (version) {
-        case 2:
-            success = [db executeUpdate:@"ALTER TABLE t_album ADD COLUMN lastest_image_path TEXT;"];
+        case 999:
+            success = [db executeUpdate:@"ALTER TABLE t_album ADD COLUMN update_time INTEGER DEFAULT 0;"];
             break;
             
         default:

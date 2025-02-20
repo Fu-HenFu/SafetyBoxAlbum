@@ -2,18 +2,7 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>NSMicrophoneUsageDescription</key>
-	<string>Use your microphone</string>
-	<key>UISupportedInterfaceOrientations</key>
-	<array>
-		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationPortraitUpsideDown</string>
-	</array>
-	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>Use access your photo library</string>
-	<key>NSCameraUsageDescription</key>
-	<string>Use your camera</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>use you camera</string>
+	<key>CFBundleDisplayName</key>
+	<string>私密管理专家</string>
 </dict>
 </plist>

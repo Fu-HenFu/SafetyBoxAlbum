@@ -127,8 +127,9 @@ static FMDatabaseQueue *_queue;
 
 - (BOOL)insertPicture:(TPictureAudioObject *)obj {
     [_queue inDatabase:^(FMDatabase * _Nonnull db) {
-        
-        NSString *sql = [NSString stringWithFormat:InsertPictureSQL, obj.name, obj.path, obj.thumbPath, obj.type, obj.state, obj.albumName, obj.albumId];
+        // 获取当前时间的 Unix 时间戳
+        NSTimeInterval timestamp = [[NSDate date] timeIntervalSince1970];
+        NSString *sql = [NSString stringWithFormat:InsertPictureSQL, obj.name, obj.path, obj.thumbPath, obj.type, obj.state, obj.albumName, obj.albumId, (int64_t)timestamp];
         BOOL flag = [db executeUpdate:sql];
         NSLog(@" insert picture %d", flag);
     }];
@@ -163,6 +164,9 @@ static FMDatabaseQueue *_queue;
     return pictureObj;
 }
 
+
+/// 更新Album表的照片总数
+/// - Parameter albumId: Album表的ID
 - (void)updateAlbumPhotoCount:(NSInteger)albumId {
     [_queue inDatabase:^(FMDatabase * _Nonnull db) {
         NSString *sql = [NSString stringWithFormat:QueryAlbumPhotoCount, albumId];
@@ -170,7 +174,7 @@ static FMDatabaseQueue *_queue;
         while ([rs next]) {
             int photoCount = [rs intForColumnIndex:0];
             NSString *updateSql = [NSString stringWithFormat:UpdateAlbumPhotoCountSQL, photoCount+1, albumId];
-            [db executeUpdate:updateSql];
+             [db executeUpdate:updateSql];
             
             break;
         }
@@ -194,9 +198,29 @@ static FMDatabaseQueue *_queue;
     }];
 }
 
+/// 移动照片到新的相册
+/// - Parameter objc: 照片
+- (BOOL)updatePictureBelongAlbum:(TPictureAudioObject *)objc andAlbumCount:(int)photoCount {
+    [_queue inDatabase:^(FMDatabase * _Nonnull db) {
+        
+        // 获取当前时间的 Unix 时间戳
+        NSTimeInterval timestamp = [[NSDate date] timeIntervalSince1970];
+        NSString *sql = [NSString stringWithFormat:UpdatePictureBelongAlbumSQL, objc.albumId, objc.albumName, (int64_t)timestamp, objc.id];
+        BOOL success = [db executeUpdate:sql];
+
+        NSLog(@"UpdateAlbum");
+    }];
+    return YES;
+}
+
+- (void)updateAlbumPhotoCount:(NSInteger)albumId andPhotoCount:(NSInteger)photoCount {
+    
+    [_queue inDatabase:^(FMDatabase * _Nonnull db) {
+        NSString *sql = [NSString stringWithFormat:UpdateAlbumPhotoCountSQL, photoCount, albumId];
+        BOOL success = [db executeUpdate:sql];
+        NSLog(@"");
+    }];
+}
+
 @end
 
-
-///Users/lixiaodong/Library/Developer/CoreSimulator/Devices/ED3E65E6-19F0-4B80-89C6-3AAC04433E82/data/Containers/Data/Application/BD886511-3869-4B88-9FC4-AD44CD4DBD67/Documents/thumb/B6A55916-08E7-4ADA-AAF4-ED139FAF51D2_L0_001.PNG
-///
-////Users/lixiaodong/Library/Developer/CoreSimulator/Devices/ED3E65E6-19F0-4B80-89C6-3AAC04433E82/data/Containers/Data/Application/BD886511-3869-4B88-9FC4-AD44CD4DBD67/Documents/thumb/B6A55916-08E7-4ADA-AAF4-ED139FAF51D2_L0_001.PNG

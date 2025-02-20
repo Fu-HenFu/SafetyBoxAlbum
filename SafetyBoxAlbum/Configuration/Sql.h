@@ -21,6 +21,7 @@ static NSString *const createAlbumSQL = @"CREATE TABLE 't_album' ("
                                         @"'type'    INTEGER DEFAULT 1, -- 1.普通相册;2.回收站\n"
                                         @"'photo_count' INTEGER DEFAULT 0,"
                                         @"'lastest_image_path'    TEXT,"
+                                        @"'update_time'    INTEGER DEFAULT 0,"
                                         @"PRIMARY KEY('id' AUTOINCREMENT)"
                                         @");";
 
@@ -43,6 +44,7 @@ static NSString *const createFakeAlbumSQL = @"CREATE TABLE 't_fake_album' ("
                                             @"'state'    INTEGER DEFAULT 1,"
                                             @"'album_name'    TEXT NOT NULL,"
                                             @"'album_id'    INTEGER NOT NULL DEFAULT 1,"
+                                            @"'update_time'    INTEGER DEFAULT 0,"
                                             @"PRIMARY KEY('id' AUTOINCREMENT)"
                                             @")";
 
@@ -54,6 +56,7 @@ static NSString *const createPictureSQL = @"CREATE TABLE 't_picture_video' ("
                                             @"'type'    INTEGER DEFAULT 1,"
                                             @"'state'    INTEGER DEFAULT 1,"
                                             @"'album_name'    TEXT NOT NULL,"
+                                            @"'update_time'    INTEGER DEFAULT 0,"
                                             @"'album_id'    INTEGER NOT NULL DEFAULT 1,"
                                             @"PRIMARY KEY('id' AUTOINCREMENT)"
                                             @")";
@@ -70,9 +73,9 @@ static NSString *const InsertAlbumSQL = @"INSERT INTO t_album (name, state, type
 static NSString *const UpdateAlbumPhotoCountSQL = @"UPDATE t_album SET photo_count = %ld WHERE id = %ld";
 static NSString *const QueryLastestAlbumSQL = @"SELECT id, name, state, photo_count, lastest_image_path FROM t_album WHERE state = 1 ORDER BY id DESC LIMIT 1";
 static NSString *const QueryAlbumSQL = @"SELECT * FROM t_album WHERE state = 1 ORDER BY type ASC;";
-static NSString *const InsertPictureSQL = @"INSERT INTO t_picture_video (name, path, thumb_path, type, state, album_name, album_id) VALUES ('%@', '%@', '%@', %d, %d, '%@', %d);";
-static NSString *const QueryPictureWithAlbumIdSQL = @"SELECT * FROM t_picture_video WHERE state = 1 AND album_id = %ld;";
+static NSString *const InsertPictureSQL = @"INSERT INTO t_picture_video (name, path, thumb_path, type, state, album_name, album_id, update_time) VALUES ('%@', '%@', '%@', %d, %d, '%@', %d, %ld);";
+static NSString *const QueryPictureWithAlbumIdSQL = @"SELECT * FROM t_picture_video WHERE state = 1 AND album_id = %ld ORDER BY update_time ASC, id ASC;";
 static NSString *const QueryAlbumPhotoCount = @"SELECT photo_count FROM t_album WHERE id = %d";
 static NSString *const UpdateAlbumLastestImagePath = @"UPDATE t_album SET lastest_image_path = '%@' WHERE id = %d";
-
+static NSString *const UpdatePictureBelongAlbumSQL = @"UPDATE t_picture_video SET album_id = %d , album_name = '%@', update_time = %ld WHERE id = %d";
 		

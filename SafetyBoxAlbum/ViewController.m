@@ -43,6 +43,7 @@ static NSString* const kCellConstant = @"CollectiveItem";
     [super viewDidLoad];
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
     _documentPath = paths.firstObject;
+    NSLog(@"app 路径 %@", _documentPath);
     
     UIColor *dynamicColor = [UIColor colorWithDynamicProvider:^UIColor * _Nonnull(UITraitCollection * _Nonnull traitCollection) {
         if (traitCollection.userInterfaceStyle == UIUserInterfaceStyleDark) {
@@ -392,6 +393,19 @@ static NSString* const kCellConstant = @"CollectiveItem";
         [cell.detailLabel setText:[NSString stringWithFormat:@"%ld个文件", count]];
         [cell.iconImageView setImage:image];
         
+    };
+    controller.updateDestinationAlbumCountBlock = ^(NSInteger albumId, NSInteger count, UIImage *lastestImage) {
+        for (TAlbumObject *obj in self.dataArray) {
+            if (obj.id == albumId) {
+                int cellIndex = [self.dataArray indexOfObject:obj];
+                TAlbumCollectionViewCell *cell = [self.collectionView cellForItemAtIndexPath:[NSIndexPath indexPathForItem:cellIndex inSection:0]];
+
+                [cell.detailLabel setText:[NSString stringWithFormat:@"%ld个文件", count]];
+                [cell.iconImageView setImage:lastestImage];
+                break;
+            }
+        }
+            
     };
     controller.navigationItem.titleView = titleView;
     self.navigationItem.backBarButtonItem = [[UIBarButtonItem alloc]initWithTitle:@"相簿" style:UIBarButtonItemStylePlain target:nil action:nil];
