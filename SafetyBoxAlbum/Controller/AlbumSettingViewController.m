@@ -814,11 +814,8 @@
         
     }
     
-    
     [self showSuccess: albumName];
-    
-    
-    
+
 }
 
 @end

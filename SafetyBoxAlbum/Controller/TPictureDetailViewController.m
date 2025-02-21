@@ -82,8 +82,9 @@ NSString *kAttributeTitle = @"Attributed string operation successfully completed
     self.scrollView.pagingEnabled = YES;
     self.scrollView.delegate = self;
     self.scrollView.contentSize = CGSizeMake(self.view.bounds.size.width * self.assetsFetchResults.count, self.view.bounds.size.height);
-    self.scrollView.minimumZoomScale = 1.0;
-    self.scrollView.maximumZoomScale = 6.0; // 最大缩放比例，可以根据需要调整
+    [self.scrollView setContentOffset:CGPointMake(self.view.frame.size.width * self.currentIndexPath.item, 0)];
+//    self.scrollView.minimumZoomScale = 1.0;
+//    self.scrollView.maximumZoomScale = 6.0; // 最大缩放比例，可以根据需要调整
     [self.view addSubview:self.scrollView];
     
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
@@ -95,8 +96,6 @@ NSString *kAttributeTitle = @"Attributed string operation successfully completed
     // 预加载第500张照片
      [self loadImageAtIndex:self.currentIndexPath.item];
      
-     // 初始设置可见范围内的图片
-    self.scrollView.contentOffset = CGPointMake(self.currentIndexPath.item * self.view.bounds.size.width, 0);
 
     [self setupVisibleImagesForOffset:self.scrollView.contentOffset.x];
     self.topToolbar = [[UIView alloc]init];
@@ -201,70 +200,70 @@ NSString *kAttributeTitle = @"Attributed string operation successfully completed
 
 - (void)setupVisibleImagesForOffset:(CGFloat)offset {
     NSInteger pageIndex = (NSInteger)(offset / self.view.bounds.size.width);
-    
+//    NSLog(@"这是 %f -- %f", self.scrollView.contentOffset.x, self.view.frame.size.width);
     // 移除不再可见的ImageView
     for (UIImageView *imageView in [self.visibleImageViews copy]) {
         NSInteger imageViewIndex = imageView.tag;
-        if (abs((int)(imageViewIndex - pageIndex)) > 1) { // 只保留当前页和前后各一页
+        if (abs((int)(imageViewIndex - pageIndex - 2000)) > 1) { // 只保留当前页和前后各一页
+            UIView *tem = [self.scrollView viewWithTag:1000 + imageViewIndex];
             [imageView removeFromSuperview];
             [self.visibleImageViews removeObject:imageView];
-        }
+        }	
     }
     
     
     // 添加新的可见ImageView
     for (NSInteger i = -1; i <= 1; i++) {
+        
         NSInteger imageViewIndex = pageIndex + i;
         if (imageViewIndex >= 0 && imageViewIndex < self.totalImages && ![self.visibleImageViews containsObject:@(imageViewIndex)]) {
-            UIImageView *imageView = [[UIImageView alloc] initWithFrame:CGRectMake(imageViewIndex * self.view.bounds.size.width, 0, self.view.bounds.size.width, self.view.bounds.size.height)];
-            imageView.tag = imageViewIndex;
+            
+            
+            // 创建缩放滚动视图
+            UIScrollView *zoomScrollView = [[UIScrollView alloc] initWithFrame:self.view.bounds];
+            zoomScrollView.delegate = self;
+            zoomScrollView.minimumZoomScale = 1.0; // 最小缩放比例
+            zoomScrollView.maximumZoomScale = 6.0; // 最大缩放比例
+            zoomScrollView.showsHorizontalScrollIndicator = NO;
+            zoomScrollView.showsVerticalScrollIndicator = NO;
+            zoomScrollView.tag = 1000 + imageViewIndex;
+            
+            zoomScrollView.zoomScale = 1.0;
+            [self.scrollView addSubview:zoomScrollView];
+            
+            UIImageView *imageView = [[UIImageView alloc] initWithFrame:zoomScrollView.bounds];
+            imageView.tag = 2000 + imageViewIndex;
+            NSLog(@"图片索引%ld", imageViewIndex);
+            [imageView setUserInteractionEnabled:YES];
             [imageView setContentMode:UIViewContentModeScaleAspectFit];
+            
+            
+            zoomScrollView.frame = CGRectMake((i + pageIndex) * self.scrollView.frame.size.width, 0,
+                                                   _scrollView.frame.size.width, _scrollView.frame.size.height);
+            
             UIImage *image = [self loadImageAtIndex:imageViewIndex]; // 加载图片
             imageView.image = image;
-            [self.scrollView addSubview:imageView];
+            [zoomScrollView addSubview:imageView];
+//            NSLog(@"tag的值 %d", imageViewIndex);
             [self.visibleImageViews addObject:imageView];
             
-//            if (i == 0) {
-//                
-//                self.showingImageView = imageView;
-//            }
+
         }
     }
+    NSLog( @"--");
 }
  
 #pragma mark - UIScrollViewDelegate
  
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
-    [self setupVisibleImagesForOffset:scrollView.contentOffset.x];
+    if (scrollView == self.scrollView) {
+        [self setupVisibleImagesForOffset:scrollView.contentOffset.x];
+
+    } else {
+        NSLog(@"hi");
+    }
 }
 
-- (void)loadImageForPage:(NSInteger)page {
-    if (page < 0 || page >= self.assetsFetchResults.count) return;
-    
-    CGRect frame = CGRectMake(page * self.view.bounds.size.width, 0, 
-                              self.view.bounds.size.width, self.view.bounds.size.height);
-    UIImageView *imageView = [[UIImageView alloc] initWithFrame:frame];
-    imageView.contentMode = UIViewContentModeScaleAspectFit;
-    
-    NSString *imagePath = [self imagePathForIndex:page andImageName:self.assetsFetchResults[page].name];
-    UIImage *cachedImage = [self.imageCache objectForKey:imagePath];
-    
-    if (cachedImage) {
-        imageView.image = cachedImage;
-    } else {
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            UIImage *image = [UIImage imageWithContentsOfFile:imagePath];
-            if (image) {
-                [self.imageCache setObject:image forKey:imagePath];
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    imageView.image = image;
-                });
-            }
-        });
-    }
-    
-    [self.scrollView addSubview:imageView];
-}
  
 - (NSString *)imagePathForIndex:(NSUInteger)index andImageName:(NSString *)imageName {
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
@@ -297,8 +296,6 @@ NSString *kAttributeTitle = @"Attributed string operation successfully completed
         //activityItems = @[[UIImage imageNamed:@"xxx"]];
         // 分享多个内容
         //activityItems = @[[UIImage imageNamed:@"xxx"],[NSURL URLWithString:@"http://www.baidu.com"],@"hello world"];
-    
-    
 
     // 创建 UIActivityViewController 实例
         UIActivityViewController *activityViewController = [[UIActivityViewController alloc] initWithActivityItems:activityItems applicationActivities:nil];
@@ -364,11 +361,23 @@ NSString *kAttributeTitle = @"Attributed string operation successfully completed
 
 - (UIView *)viewForZoomingInScrollView:(UIScrollView *)scrollView {
     // 计算当前显示的图片索引
-    NSInteger currentIndex = (NSInteger)(scrollView.contentOffset.x / self.view.frame.size.width);
-    NSLog(@"Current image index: %ld", (long)currentIndex);
+    NSInteger currentIndex = (NSInteger)(self.scrollView.contentOffset.x / self.view.frame.size.width);
+//    NSLog(@"Current image index: %ld", (long)currentIndex);
     
+    if (scrollView != self.scrollView) {
+        UIView *tempView = [scrollView viewWithTag:currentIndex + 2000];
+        return tempView; // 返回当前页的ImageView[4]
+    }
     return nil;
     
+}
+
+- (void)scrollViewWillBeginZooming:(UIScrollView *)scrollView withView:(UIView *)view {
+    self.scrollView.scrollEnabled = NO; // 缩放时禁止滚动[8]
+}
+
+- (void)scrollViewDidEndZooming:(UIScrollView *)scrollView withView:(UIView *)view atScale:(CGFloat)scale {
+    self.scrollView.scrollEnabled = YES; // 恢复滚动[8]
 }
 
 - (void)didReceiveMemoryWarning {
