@@ -515,7 +515,7 @@
 }
 
 - (void)pushImagePickerController {
-    TZImagePickerController *imagePickerVc = [[TZImagePickerController alloc] initWithMaxImagesCount:9 delegate:self];
+    TZImagePickerController *imagePickerVc = [[TZImagePickerController alloc] initWithMaxImagesCount:40 delegate:self];
 
     // You can get the photos by block, the same as by delegate.
     // 你可以通过block或者代理，来得到用户选择的照片.
@@ -600,11 +600,9 @@
         
     });
     
-//    dispatch_async(dispatch_get_main_queue(), ^{
-    [self.waitingAlert hideView];
-    [self showSuccess: self.albumName];
-        
-//    });
+    [self showWaiting];
+    
+
     
 }
 
@@ -689,6 +687,11 @@
     [self updateAlbumLastestImagePath:lastestImagePathStr];
     
 
+        dispatch_async(dispatch_get_main_queue(), ^{
+        [self.waitingAlert hideView];
+        [self showSuccess: self.albumName];
+            
+        });
 }
 
 
@@ -746,8 +749,9 @@
 /// 移至按钮事件
 /// - Parameter sender: 对象
 - (void)movePictureToAnotherAlbum:(UIButton *)sender {
-    NSLog(@"click");
+
     self.selectedAlbumController = [[TSelectAlbumViewController alloc]init];
+    [self.selectedAlbumController setSelectedCount:_selectedEditAssets.count];
     [self.selectedAlbumController setModalTransitionStyle:UIModalPresentationFullScreen];
     [self.selectedAlbumController setDelegate:self];
     [self presentViewController:self.selectedAlbumController animated:YES completion:^{
@@ -771,8 +775,10 @@
 
 }
 
-/// 选择相册,并确定后的代理方法
-/// - Parameter album: 目的相册ID
+/// 转移照片 - 选择相册,并确定后,的代理方法
+/// - Parameter albumId: 目的相册的ID
+/// - Parameter albumName: 目的相册的名字
+/// - Parameter photoCount: 目的相册添加照片后的总数
 - (void)selectedAlbum:(NSInteger)albumId andAlbumName:(nonnull NSString *)albumName andAlbumPhotoCount:(int)photoCount {
     for (TPictureAudioObject *pictureObj in _selectedEditAssets) {
         [pictureObj setAlbumId:albumId];
@@ -814,7 +820,10 @@
         
     }
     
-    [self showSuccess: albumName];
+    
+    [self.rightItem setTitle:@"选择"];
+    [self hideEditBottomView];
+    [self.collectionView setAllowsMultipleSelection:NO];    [self showSuccess: albumName];
 
 }
 

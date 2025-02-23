@@ -106,7 +106,7 @@
     TAlbumObject *obj = self.albumArray[indexPath.row];
     _albumId = obj.id; 
     _albumName = obj.name;
-    _photoCount = obj.photoCount + 1;
+    _photoCount = self.selectedCount + obj.photoCount;
     [self.confirmButton setEnabled:YES];
 }
 

@@ -17,8 +17,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface TSelectAlbumViewController : UIViewController
 
-
 @property (nonatomic, weak) id<SelectedDelegate> delegate;
+@property (nonatomic, assign) int selectedCount;
 
 @end
 

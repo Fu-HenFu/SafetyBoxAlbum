@@ -201,15 +201,19 @@ NSString *kAttributeTitle = @"Attributed string operation successfully completed
 - (void)setupVisibleImagesForOffset:(CGFloat)offset {
     NSInteger pageIndex = (NSInteger)(offset / self.view.bounds.size.width);
 //    NSLog(@"这是 %f -- %f", self.scrollView.contentOffset.x, self.view.frame.size.width);
-    // 移除不再可见的ImageView
-    for (UIImageView *imageView in [self.visibleImageViews copy]) {
+    
+    for (UIScrollView *subScrollView in [self.visibleImageViews copy]) {
+        UIImageView *imageView = (UIImageView *) [subScrollView subviews].firstObject;
         NSInteger imageViewIndex = imageView.tag;
-        if (abs((int)(imageViewIndex - pageIndex - 2000)) > 1) { // 只保留当前页和前后各一页
+        if (abs((int)(imageViewIndex - pageIndex)) > 1) { // 只保留当前页和前后各一页
             UIView *tem = [self.scrollView viewWithTag:1000 + imageViewIndex];
             [imageView removeFromSuperview];
-            [self.visibleImageViews removeObject:imageView];
-        }	
+            [self.visibleImageViews removeObject:subScrollView];
+            [subScrollView removeFromSuperview];
+            [subScrollView delegate];
+        }
     }
+    
     
     
     // 添加新的可见ImageView
@@ -245,7 +249,7 @@ NSString *kAttributeTitle = @"Attributed string operation successfully completed
             imageView.image = image;
             [zoomScrollView addSubview:imageView];
 //            NSLog(@"tag的值 %d", imageViewIndex);
-            [self.visibleImageViews addObject:imageView];
+            [self.visibleImageViews addObject:zoomScrollView];
             
 
         }
