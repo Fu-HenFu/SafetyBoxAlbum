@@ -83,6 +83,10 @@ static FMDatabaseQueue *_queue;
     return [NSArray arrayWithArray:albumArray];
 }
 
+/// 更新相册中照片总数字段
+/// - Parameters:
+///   - albumId: 相册ID
+///   - photoCount: 所含照片总数
 - (BOOL)updateAlbumPhotoCount:(NSInteger)albumId andCount:(NSInteger)photoCount {
     [_queue inDatabase:^(FMDatabase * _Nonnull db) {
         NSString *sql = [NSString stringWithFormat:UpdateAlbumPhotoCountSQL, photoCount, albumId];
@@ -165,7 +169,7 @@ static FMDatabaseQueue *_queue;
 }
 
 
-/// 更新Album表的照片总数
+/// 更新Album表的照片总数 (递增1)
 /// - Parameter albumId: Album表的ID
 - (void)updateAlbumPhotoCount:(NSInteger)albumId {
     [_queue inDatabase:^(FMDatabase * _Nonnull db) {
@@ -219,6 +223,14 @@ static FMDatabaseQueue *_queue;
         NSString *sql = [NSString stringWithFormat:UpdateAlbumPhotoCountSQL, photoCount, albumId];
         BOOL success = [db executeUpdate:sql];
         NSLog(@"");
+    }];
+}
+
+- (void)updatePictureState:(NSInteger)state andID:(NSInteger)pictureId {
+    [_queue inDatabase:^(FMDatabase * _Nonnull db) {
+            NSString *sql = [NSString stringWithFormat:UpdatePictureStateSQL, state, pictureId];
+            BOOL success = [db executeUpdate:sql];
+            NSLog(@"successful %d", success);
     }];
 }
 

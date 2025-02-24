@@ -28,7 +28,7 @@
     
     NSMutableArray *_selectedPhotos;
     NSMutableArray *_selectedAssets;
-    NSMutableArray *_selectedEditAssets;
+    NSMutableArray *_selectedEditAssets;    //  选择照片时,选中的照片对象
     BOOL _isSelectOriginalPhoto;
     BOOL _isAllowEditVideo;
     
@@ -64,6 +64,7 @@
 
 @property (nonatomic, strong) SCLAlertView *waitingAlert;
 @property (nonatomic, strong) SCLAlertView *successAlert;
+@property (nonatomic, strong) SCLAlertView *warningAlert;
 @property (nonatomic, strong) UIBarButtonItem *rightItem;
 
 @property (nonatomic, strong) TMultiView *editBottomView;
@@ -170,10 +171,11 @@
     
     [self.editBottomView setBackgroundColor:[UIColor colorWithWhite:244/255.0 alpha:1]];
     [self.editBottomView.moveButton addTarget:self action:@selector(movePictureToAnotherAlbum:) forControlEvents:UIControlEventTouchUpInside];
+    [self.editBottomView.deleteButton addTarget:self action:@selector(deletePictureFromAlbum:) forControlEvents:UIControlEventTouchUpInside];
     [self.editBottomView mas_makeConstraints:^(MASConstraintMaker *make) {
                 if (@available(iOS 11.0, *)) {
                     // 对于iOS 11及以上版本，使用safeAreaLayoutGuide
-                    make.top .equalTo(self.collectionView.mas_bottom).offset(0);
+                    make.top.equalTo(self.collectionView.mas_bottom).offset(0);
                     make.centerX.equalTo(self.view.mas_centerX);
                     make.height.equalTo(@(EditBottomViewHeight));
                     make.width.equalTo(@(self.screenWidth));
@@ -606,7 +608,7 @@
     
 }
 
-/// update 数据表,插入新的照片和更新照片总数
+/// update 数据表,把插入薄中选中的照片中选中的新的照片和更新照片总数
 /// - Parameters:
 ///   - photos: 选中的uiimage 对象队列
 ///   - assets: 选中的asset 对象队列
@@ -697,7 +699,7 @@
 
 /// 多选编辑按钮
 /// - Parameter button: 多选按钮
-- (void)multiplySelectAction:(UIBarButtonItem *)button {
+- (void)multiplySelectAction:(nullable UIBarButtonItem *)button {
     if (!_isEdit) {
         _isEdit = YES;
         [self.rightItem setTitle:@"取消"];
@@ -715,6 +717,7 @@
     [self.collectionView reloadData];
 }
 
+/// 展示底部工具栏
 - (void)displayEditBottomView {
     _selectedEditAssets = [NSMutableArray array];
     
@@ -749,7 +752,7 @@
 /// 移至按钮事件
 /// - Parameter sender: 对象
 - (void)movePictureToAnotherAlbum:(UIButton *)sender {
-
+    
     self.selectedAlbumController = [[TSelectAlbumViewController alloc]init];
     [self.selectedAlbumController setSelectedCount:_selectedEditAssets.count];
     [self.selectedAlbumController setModalTransitionStyle:UIModalPresentationFullScreen];
@@ -764,6 +767,55 @@
 //    [self showSuccess:@"完成" andSubTitle:@"照片已移至" andCloseBtnTitle:@""];
 }
 
+- (void)deletePictureFromAlbum:(UIButton *)sender {
+    
+    self.warningAlert = [[SCLAlertView alloc] init];
+    __weak id weakself = self;
+    [self.warningAlert addButton:@"确定" actionBlock:^{
+        [weakself deletePictureFromAlbumConfirm];
+        [weakself multiplySelectAction:nil];
+    }];
+//    [self.warningAlert setShowAnimationType:SCLAlertViewShowAnimationSlideInFromCenter];
+    [self.warningAlert showWarning:self.navigationController title:@"即将删除" subTitle:@"您确定要将这些照片或视频从相册中移除?" closeButtonTitle:@"取消" duration:0];
+
+    
+}
+
+/// 移除照片,点击确认后
+- (void)deletePictureFromAlbumConfirm{
+    //  删除相册中的照片
+    //  更新相簿的总数
+    //  更新相簿的最后一张照片的信息
+    //  更新Collectionviewcell
+    //  更新相册页面总数显示
+    for (TPictureAudioObject *pictureObj in _selectedEditAssets) {
+        [self.storage updatePictureState:pictureObj.state == 1 ? 0 : 1  andID:pictureObj.id];
+    }
+    NSInteger releasePhoto = self.dataArray.count - _selectedEditAssets.count;
+    [self.storage updateAlbumPhotoCount:_albumId andCount:releasePhoto];
+    
+    for (TPictureAudioObject *obj in _selectedEditAssets) {
+        if ([self.dataArray containsObject:obj]) {
+            [self.dataArray removeObject:obj];
+            [self.collectionView reloadData];
+        }
+    }
+    
+    NSString *lastThumbImagePath = [(TPictureAudioObject *)self.dataArray.lastObject thumbPath];
+    [self.storage updateAlbumLastestImagePath:lastThumbImagePath albumId:_albumId];
+    
+    if (self.updateAlbumCountBlock) {
+        
+        if (self.documentsPath.length == 0) {
+            self.documentsPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) firstObject];
+        }
+        NSString *thumbPath = [self.documentsPath stringByAppendingPathComponent:[(TPictureAudioObject *)self.dataArray.lastObject thumbPath]];
+        
+        UIImage *image = [UIImage imageWithContentsOfFile:thumbPath];
+        self.updateAlbumCountBlock(self.dataArray.count, image);
+        
+    }
+}
 
 - (void)showSuccess:(NSString *)title andSubTitle:(NSString *)subTitle andCloseBtnTitle:(NSString *)closeTitle
 {
@@ -801,6 +853,9 @@
     //  更新Album表的lastest_image_path值
     [self.storage updateAlbumLastestImagePath:[(TPictureAudioObject *)_selectedEditAssets.lastObject thumbPath] albumId:albumId];
     
+    //  更新原相册照片总数
+    [self.storage updateAlbumPhotoCount:_albumId andCount:self.dataArray.count - _selectedEditAssets.count];
+    
     for (TPictureAudioObject *obj in _selectedEditAssets) {
         if ([self.dataArray containsObject:obj]) {
             [self.dataArray removeObject:obj];
@@ -808,8 +863,7 @@
         }
     }
     
-    //  更新原相册照片总数
-    [self.storage updateAlbumPhotoCount:_albumId andCount:self.dataArray.count - _selectedEditAssets.count];
+
     if (self.updateAlbumCountBlock) {
         
         NSString *thumbPath = [self.documentsPath stringByAppendingPathComponent:[(TPictureAudioObject *)self.dataArray.lastObject thumbPath]];
@@ -823,7 +877,8 @@
     
     [self.rightItem setTitle:@"选择"];
     [self hideEditBottomView];
-    [self.collectionView setAllowsMultipleSelection:NO];    [self showSuccess: albumName];
+    [self.collectionView setAllowsMultipleSelection:NO];   
+    [self showSuccess: albumName];
 
 }
 

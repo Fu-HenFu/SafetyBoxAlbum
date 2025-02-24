@@ -34,6 +34,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)updateAlbumLastestImagePath:(NSString *)imagePath albumId:(NSInteger)albumId;
 
 - (BOOL)updatePictureBelongAlbum:(TPictureAudioObject *)objc andAlbumCount:(int)photoCount;
+- (void)updatePictureState:(NSInteger)state andID:(NSInteger)pictureId;
+
 @end
 
 NS_ASSUME_NONNULL_END

@@ -77,10 +77,11 @@
     [views mas_distributeViewsAlongAxis:MASAxisTypeHorizontal withFixedSpacing:padding leadSpacing:padding tailSpacing:padding];
 
      
-        // 设置每个子视图的宽度相等
-        [views mas_makeConstraints:^(MASConstraintMaker *make) {
-            make.height.equalTo(@80); // 设置每个视图的高度
-        }];
+    // 设置每个子视图的宽度相等
+    [views mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.top.equalTo(self.mas_top);
+        make.height.equalTo(@80); // 设置每个视图的高度
+    }];
     
     
 }

@@ -67,15 +67,20 @@ static NSString *const createVersionSQL = @"CREATE TABLE 't_schema_migrations' (
                                             @"'schema_migrations' TEXT,"
                                             @"PRIMARY KEY('id' AUTOINCREMENT)"
                                             @")";
-
+//  t_album
 static NSString *const InsertAlbumSQL = @"INSERT INTO t_album (name, state, type) VALUES ('%@', %ld, %ld);";
 
 static NSString *const UpdateAlbumPhotoCountSQL = @"UPDATE t_album SET photo_count = %ld WHERE id = %ld";
 static NSString *const QueryLastestAlbumSQL = @"SELECT id, name, state, photo_count, lastest_image_path FROM t_album WHERE state = 1 ORDER BY id DESC LIMIT 1";
 static NSString *const QueryAlbumSQL = @"SELECT * FROM t_album WHERE state = 1 ORDER BY type ASC;";
-static NSString *const InsertPictureSQL = @"INSERT INTO t_picture_video (name, path, thumb_path, type, state, album_name, album_id, update_time) VALUES ('%@', '%@', '%@', %d, %d, '%@', %d, %ld);";
-static NSString *const QueryPictureWithAlbumIdSQL = @"SELECT * FROM t_picture_video WHERE state = 1 AND album_id = %ld ORDER BY update_time ASC, id ASC;";
 static NSString *const QueryAlbumPhotoCount = @"SELECT photo_count FROM t_album WHERE id = %d";
 static NSString *const UpdateAlbumLastestImagePath = @"UPDATE t_album SET lastest_image_path = '%@' WHERE id = %d";
+
+
+
+//  t_picture_video
+static NSString *const InsertPictureSQL = @"INSERT INTO t_picture_video (name, path, thumb_path, type, state, album_name, album_id, update_time) VALUES ('%@', '%@', '%@', %d, %d, '%@', %d, %ld);";
+static NSString *const QueryPictureWithAlbumIdSQL = @"SELECT * FROM t_picture_video WHERE state = 1 AND album_id = %ld ORDER BY update_time ASC, id ASC;";
 static NSString *const UpdatePictureBelongAlbumSQL = @"UPDATE t_picture_video SET album_id = %d , album_name = '%@', update_time = %ld WHERE id = %d";
+static NSString *const UpdatePictureStateSQL = @"UPDATE t_picture_video SET state = %ld WHERE id = %ld";
 		
