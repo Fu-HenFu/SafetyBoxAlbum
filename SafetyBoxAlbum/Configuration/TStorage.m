@@ -8,6 +8,7 @@
 #import "TStorage.h"
 #import "FMDatabaseQueue+SaftyBo.h"
 #import "Sql.h"
+#import "GlobalDefine.h"
 
 #define ROWID @"id"
 #define NAME @"name"
@@ -140,10 +141,30 @@ static FMDatabaseQueue *_queue;
     return NO;
 }
 
+/// 查询指定相册中给出的状态的照片
+/// - Parameters:
+///   - state: 状态
+///   - albumId: 相册ID
 - (NSArray *)queryPicture:(NSInteger)state andAlbumId:(NSInteger)albumId {
     NSMutableArray *pictureArray = [NSMutableArray array];
     [_queue inDatabase:^(FMDatabase * _Nonnull db) {
-        NSString *sql = [NSString stringWithFormat:QueryPictureWithAlbumIdSQL, albumId];
+        NSString *sql = [NSString stringWithFormat:QueryPictureWithAlbumIdSQL, state, albumId];
+        FMResultSet* rs = [db executeQuery:sql];
+        while ([rs next]) {
+            [pictureArray addObject:[self getPictureAudioByResultSet:rs]];
+        }
+    }];
+    return [NSArray arrayWithArray:pictureArray];
+}
+
+/// 查询回收站相册中给出的状态的照片
+/// - Parameters:
+///   - albumId: 相册ID
+///   - fakeType: 是否时假相册
+- (NSArray *)queryGarbagePicture:(NSInteger)albumId andFakeType:(NSInteger)fakeType {
+    NSMutableArray *pictureArray = [NSMutableArray array];
+    [_queue inDatabase:^(FMDatabase * _Nonnull db) {
+        NSString *sql = [NSString stringWithFormat:QueryGarbagePictureSQL, USELESS_STATE_TYPE, fakeType];
         FMResultSet* rs = [db executeQuery:sql];
         while ([rs next]) {
             [pictureArray addObject:[self getPictureAudioByResultSet:rs]];
@@ -178,7 +199,7 @@ static FMDatabaseQueue *_queue;
         while ([rs next]) {
             int photoCount = [rs intForColumnIndex:0];
             NSString *updateSql = [NSString stringWithFormat:UpdateAlbumPhotoCountSQL, photoCount+1, albumId];
-             [db executeUpdate:updateSql];
+            BOOL success = [db executeUpdate:updateSql];
             
             break;
         }
@@ -228,9 +249,12 @@ static FMDatabaseQueue *_queue;
 
 - (void)updatePictureState:(NSInteger)state andID:(NSInteger)pictureId {
     [_queue inDatabase:^(FMDatabase * _Nonnull db) {
-            NSString *sql = [NSString stringWithFormat:UpdatePictureStateSQL, state, pictureId];
-            BOOL success = [db executeUpdate:sql];
-            NSLog(@"successful %d", success);
+        // 获取当前时间的 Unix 时间戳
+        NSTimeInterval timestamp = [[NSDate date] timeIntervalSince1970];
+        
+        NSString *sql = [NSString stringWithFormat:UpdatePictureStateSQL, state, (long)timestamp, pictureId];
+        BOOL success = [db executeUpdate:sql];
+        NSLog(@"successful %d", success);
     }];
 }
 

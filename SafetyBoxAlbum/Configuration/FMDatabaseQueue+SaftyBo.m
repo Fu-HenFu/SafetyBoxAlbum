@@ -12,7 +12,7 @@
 
 #define DB_PATH [NSString stringWithFormat:@"%@/%@.db", ST_DOCUMENT_DIRECTORY, ST_APP_NAME]
 
-#define LASTESTVERSION 2
+#define LASTESTVERSION 3
 
 @implementation FMDatabaseQueue (SaftyBo)
 + (instancetype)shareInstense {
@@ -82,7 +82,7 @@
 //                    }
 //
     // 记录升级版本
-    BOOL success = [db executeUpdate:@"INSERT INTO t_schema_migrations (version) VALUES (?)", @(1)];
+    BOOL success = [db executeUpdate:@"INSERT INTO t_schema_migrations (version) VALUES (?)", @(3)];
     if (!success) {
         return NO;
     }
@@ -103,11 +103,17 @@
     return success;
 }
 
+/// 具体更新数据操作
+/// - Parameters:
+///   - version: 新版本号
+///   - db: FMDatabase对象
 - (BOOL)performUpgradeStepForVersion:(NSInteger)version database:(FMDatabase *)db {
     BOOL success = YES;
     switch (version) {
-        case 999:
-            success = [db executeUpdate:@"ALTER TABLE t_album ADD COLUMN update_time INTEGER DEFAULT 0;"];
+        case 3:
+            success = [db executeUpdate:AlterTableAlbumSQL];
+            success = [db executeUpdate:AlterTablePictureVideoSQL];
+//            success = [db executeUpdate:@"ALTER TABLE t_album ADD COLUMN update_time INTEGER DEFAULT 0;"];
             break;
             
         default:
@@ -117,7 +123,7 @@
     
     // 更新数据库版本
     // 记录升级版本
-    success = [db executeUpdate:@"UPDATE t_schema_migrations SET version = ? WHERE id = ?", @2, @1];
+    success = [db executeUpdate:@"UPDATE t_schema_migrations SET version = ? WHERE id = ?", @3, @1];
     return success;
     
 }

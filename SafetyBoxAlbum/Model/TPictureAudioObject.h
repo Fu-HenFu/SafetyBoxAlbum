@@ -19,6 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) NSInteger state;
 @property (nonatomic, strong) NSString *albumName;
 @property (nonatomic, assign) NSInteger albumId;
+@property (nonatomic, assign) NSInteger fakeType;
 	
 @end
 

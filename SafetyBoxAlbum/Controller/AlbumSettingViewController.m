@@ -699,7 +699,7 @@
 
 /// 多选编辑按钮
 /// - Parameter button: 多选按钮
-- (void)multiplySelectAction:(nullable UIBarButtonItem *)button {
+- (void)	multiplySelectAction:(nullable UIBarButtonItem *)button {
     if (!_isEdit) {
         _isEdit = YES;
         [self.rightItem setTitle:@"取消"];
@@ -760,11 +760,7 @@
     [self presentViewController:self.selectedAlbumController animated:YES completion:^{
             
     }];
-//    for (TPictureAudioObject *obj in _selectedEditAssets) {
-//        [self.storage updatePictureBelongAlbum:obj];
-//
-//    }
-//    [self showSuccess:@"完成" andSubTitle:@"照片已移至" andCloseBtnTitle:@""];
+
 }
 
 - (void)deletePictureFromAlbum:(UIButton *)sender {
@@ -777,7 +773,6 @@
     }];
 //    [self.warningAlert setShowAnimationType:SCLAlertViewShowAnimationSlideInFromCenter];
     [self.warningAlert showWarning:self.navigationController title:@"即将删除" subTitle:@"您确定要将这些照片或视频从相册中移除?" closeButtonTitle:@"取消" duration:0];
-
     
 }
 

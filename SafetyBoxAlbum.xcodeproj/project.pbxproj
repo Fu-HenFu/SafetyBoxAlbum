@@ -16,6 +16,8 @@
 		337C083E2D5C8E810036F5F6 /* TEmailSettingViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 337C083D2D5C8E810036F5F6 /* TEmailSettingViewController.m */; };
 		337C08882D62D2820036F5F6 /* TMultiView.m in Sources */ = {isa = PBXBuildFile; fileRef = 337C08872D62D2820036F5F6 /* TMultiView.m */; };
 		337C088B2D6439230036F5F6 /* TSelectAlbumViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 337C088A2D6439230036F5F6 /* TSelectAlbumViewController.m */; };
+		337C088E2D6C4B740036F5F6 /* TGarbageViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 337C088D2D6C4B740036F5F6 /* TGarbageViewController.m */; };
+		337C08912D6C6BB10036F5F6 /* TGarbageMultiSelecteView.m in Sources */ = {isa = PBXBuildFile; fileRef = 337C08902D6C6BB10036F5F6 /* TGarbageMultiSelecteView.m */; };
 		338D6B962D363CA10092589C /* TImageCollectionViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 338D6B952D363CA10092589C /* TImageCollectionViewCell.m */; };
 		338D6B992D364C4B0092589C /* TDeleteView.m in Sources */ = {isa = PBXBuildFile; fileRef = 338D6B982D364C4B0092589C /* TDeleteView.m */; };
 		33F1B2DB2D33902800FFEFDA /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 33F1B2DA2D33902800FFEFDA /* AppDelegate.m */; };
@@ -82,6 +84,10 @@
 		337C08872D62D2820036F5F6 /* TMultiView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TMultiView.m; sourceTree = "<group>"; };
 		337C08892D6439230036F5F6 /* TSelectAlbumViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TSelectAlbumViewController.h; sourceTree = "<group>"; };
 		337C088A2D6439230036F5F6 /* TSelectAlbumViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TSelectAlbumViewController.m; sourceTree = "<group>"; };
+		337C088C2D6C4B740036F5F6 /* TGarbageViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TGarbageViewController.h; sourceTree = "<group>"; };
+		337C088D2D6C4B740036F5F6 /* TGarbageViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TGarbageViewController.m; sourceTree = "<group>"; };
+		337C088F2D6C6BB10036F5F6 /* TGarbageMultiSelecteView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TGarbageMultiSelecteView.h; sourceTree = "<group>"; };
+		337C08902D6C6BB10036F5F6 /* TGarbageMultiSelecteView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TGarbageMultiSelecteView.m; sourceTree = "<group>"; };
 		338D6B942D363CA10092589C /* TImageCollectionViewCell.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TImageCollectionViewCell.h; sourceTree = "<group>"; };
 		338D6B952D363CA10092589C /* TImageCollectionViewCell.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = TImageCollectionViewCell.m; sourceTree = "<group>"; };
 		338D6B972D364C4B0092589C /* TDeleteView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TDeleteView.h; sourceTree = "<group>"; };
@@ -291,6 +297,8 @@
 				337C083D2D5C8E810036F5F6 /* TEmailSettingViewController.m */,
 				337C08892D6439230036F5F6 /* TSelectAlbumViewController.h */,
 				337C088A2D6439230036F5F6 /* TSelectAlbumViewController.m */,
+				337C088C2D6C4B740036F5F6 /* TGarbageViewController.h */,
+				337C088D2D6C4B740036F5F6 /* TGarbageViewController.m */,
 			);
 			path = Controller;
 			sourceTree = "<group>";
@@ -316,6 +324,8 @@
 				338D6B982D364C4B0092589C /* TDeleteView.m */,
 				337C08862D62D2820036F5F6 /* TMultiView.h */,
 				337C08872D62D2820036F5F6 /* TMultiView.m */,
+				337C088F2D6C6BB10036F5F6 /* TGarbageMultiSelecteView.h */,
+				337C08902D6C6BB10036F5F6 /* TGarbageMultiSelecteView.m */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -586,6 +596,7 @@
 				33F1B31B2D33993500FFEFDA /* TStorage.m in Sources */,
 				337C083E2D5C8E810036F5F6 /* TEmailSettingViewController.m in Sources */,
 				33F1B2EF2D33902A00FFEFDA /* main.m in Sources */,
+				337C088E2D6C4B740036F5F6 /* TGarbageViewController.m in Sources */,
 				33F1B2E12D33902800FFEFDA /* ViewController.m in Sources */,
 				332840252D37A959008732E7 /* TPictureAudioObject.m in Sources */,
 				33F1B3342D339CC100FFEFDA /* TAlbumCollectionViewCell.m in Sources */,
@@ -599,6 +610,7 @@
 				33F1B33F2D339D0F00FFEFDA /* TSwitchTableViewCell.m in Sources */,
 				33F1B3372D339CC100FFEFDA /* TCreateAlbumPhotoView.m in Sources */,
 				33F1B32A2D339C7C00FFEFDA /* AlbumSettingViewController.m in Sources */,
+				337C08912D6C6BB10036F5F6 /* TGarbageMultiSelecteView.m in Sources */,
 				33F1B3402D339D0F00FFEFDA /* TSettingTableViewCell.m in Sources */,
 				33F1B3252D339B8C00FFEFDA /* UIToolbar+EEToolbarCenterButton.m in Sources */,
 				33F1B2DB2D33902800FFEFDA /* AppDelegate.m in Sources */,

@@ -65,8 +65,6 @@
         [self.selectionCircle setImage:[UIImage imageNamed:@"photo_sel_photoPickerVc"]];
         [self.overlayView setHidden:NO];
         
-//        [self.contentView insertSubview:self.overlayView belowSubview:self.selectionCircle];
-//        [self.overlayView setUserInteractionEnabled:NO];
         [self animateImage];
         return;
     }

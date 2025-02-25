@@ -35,7 +35,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (BOOL)updatePictureBelongAlbum:(TPictureAudioObject *)objc andAlbumCount:(int)photoCount;
 - (void)updatePictureState:(NSInteger)state andID:(NSInteger)pictureId;
-
+- (NSArray *)queryGarbagePicture:(NSInteger)albumId andFakeType:(NSInteger)fakeType;
 @end
 
 NS_ASSUME_NONNULL_END

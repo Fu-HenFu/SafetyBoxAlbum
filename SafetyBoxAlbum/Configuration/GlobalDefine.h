@@ -21,5 +21,10 @@ typedef enum : NSUInteger {
     USEFUL_STATE_TYPE,
 } STATE_TYPE;
 
+typedef enum : NSUInteger {
+    IS_FAKE = 0,
+    NOT_FAKE,
+} FAKE_TYPE;
+
 
 

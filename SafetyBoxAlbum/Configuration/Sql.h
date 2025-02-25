@@ -19,6 +19,7 @@ static NSString *const createAlbumSQL = @"CREATE TABLE 't_album' ("
                                         @"'name'    TEXT,"
                                         @"'state'    INTEGER DEFAULT 1,"
                                         @"'type'    INTEGER DEFAULT 1, -- 1.普通相册;2.回收站\n"
+                                        @"'fake_type'   INTEGER DEFALUT 1, -- 1.正常状态;2.假状态\n"
                                         @"'photo_count' INTEGER DEFAULT 0,"
                                         @"'lastest_image_path'    TEXT,"
                                         @"'update_time'    INTEGER DEFAULT 0,"
@@ -54,6 +55,7 @@ static NSString *const createPictureSQL = @"CREATE TABLE 't_picture_video' ("
                                             @"'path'    TEXT NOT NULL,"
                                             @"'thumb_path'  TEXT NOT NULL,"
                                             @"'type'    INTEGER DEFAULT 1,"
+                                            @"'fake_type'   INTEGER DEFALUT 1, -- 1.正常状态;2.假状态\n"
                                             @"'state'    INTEGER DEFAULT 1,"
                                             @"'album_name'    TEXT NOT NULL,"
                                             @"'update_time'    INTEGER DEFAULT 0,"
@@ -80,7 +82,13 @@ static NSString *const UpdateAlbumLastestImagePath = @"UPDATE t_album SET lastes
 
 //  t_picture_video
 static NSString *const InsertPictureSQL = @"INSERT INTO t_picture_video (name, path, thumb_path, type, state, album_name, album_id, update_time) VALUES ('%@', '%@', '%@', %d, %d, '%@', %d, %ld);";
-static NSString *const QueryPictureWithAlbumIdSQL = @"SELECT * FROM t_picture_video WHERE state = 1 AND album_id = %ld ORDER BY update_time ASC, id ASC;";
+static NSString *const QueryPictureWithAlbumIdSQL = @"SELECT * FROM t_picture_video WHERE state = %ld AND album_id = %ld ORDER BY update_time ASC, id ASC;";
 static NSString *const UpdatePictureBelongAlbumSQL = @"UPDATE t_picture_video SET album_id = %d , album_name = '%@', update_time = %ld WHERE id = %d";
-static NSString *const UpdatePictureStateSQL = @"UPDATE t_picture_video SET state = %ld WHERE id = %ld";
+static NSString *const UpdatePictureStateSQL = @"UPDATE t_picture_video SET state = %ld, update_time = %ld WHERE id = %ld";
+static NSString *const QueryGarbagePictureSQL = @"SELECT * FROM t_picture_video WHERE state = %ld AND fake_type = %ld ORDER BY update_time ASC, id ASC;";
+
+
+// alter table
+static NSString *const AlterTablePictureVideoSQL = @"ALTER TABLE t_picture_video ADD COLUMN fake_type INTEGE  DEFAULT 1;";
+static NSString *const AlterTableAlbumSQL = @"ALTER TABLE t_album ADD COLUMN fake_type INTEGE  DEFAULT 1;";
 		

@@ -7,14 +7,16 @@
 
 #import "ViewController.h"
 #import <Foundation/Foundation.h>
-
+#import "TGarbageViewController.h"
 
 
 static NSString* const kCellConstant = @"CollectiveItem";
 
 @interface ViewController () {
     NSString *_documentPath;
+    
 }
+@property (nonatomic, strong) NSMutableArray *garbageArray;
 
 @end
 
@@ -35,6 +37,7 @@ static NSString* const kCellConstant = @"CollectiveItem";
     if (self = [super initWithCollectionViewLayout:layout]) {
         
     }
+    self.garbageArray = [NSMutableArray arrayWithArray:[self.storage queryGarbagePicture:0 andFakeType:NOT_FAKE]];
     // 调用父类的初始化方法
     return self;
 }
@@ -289,12 +292,13 @@ static NSString* const kCellConstant = @"CollectiveItem";
         // 配置单元格的属性，包括传入自定义值
         
         albumObject = [self.dataArray objectAtIndex:indexPath.item];
+        cell.albumId = albumObject.id;
         cell.albumName = albumObject.name;
         
         // 其他配置代码
         cell.titleLabel.text = cell.albumName;
         [cell.iconImageView setImage:[UIImage imageNamed:@"garbage"]];
-        
+        cell.detailLabel.text = [NSString stringWithFormat:@"%ld个文件", self.garbageArray.count];
         cell.delegate = self;
         return cell;
     } else {
@@ -385,6 +389,36 @@ static NSString* const kCellConstant = @"CollectiveItem";
     
     UIView *titleView = [[UIView alloc] initWithFrame:titleLabel.frame];
     [titleView addSubview:titleLabel];
+    
+
+    if (cell.albumId == 2) {
+        TGarbageViewController *controller = [[TGarbageViewController alloc]initWithAlbumId:cell.albumId andAlbumName:cell.albumName];
+        controller.updateAlbumCountBlock = ^(NSInteger count, UIImage *image) {
+            
+            self.dataArray = [NSMutableArray arrayWithArray:[self.storage queryAlbum:1]];
+            [cell.detailLabel setText:[NSString stringWithFormat:@"%ld个文件", count]];
+//            [cell.iconImageView setImage:image];
+        };
+        controller.updateDestinationAlbumCountBlock = ^(NSInteger albumId, NSInteger count, UIImage * _Nonnull lastestImage) {
+            
+            for (TAlbumObject *obj in self.dataArray) {
+                if (obj.id == albumId) {
+                    int cellIndex = [self.dataArray indexOfObject:obj];
+                    TAlbumCollectionViewCell *cell = [self.collectionView cellForItemAtIndexPath:[NSIndexPath indexPathForItem:cellIndex inSection:0]];
+                    
+                    [cell.detailLabel setText:[NSString stringWithFormat:@"%ld个文件", obj.photoCount]];
+                    [cell.iconImageView setImage:lastestImage];
+                    break;
+                }
+            }
+        };
+        
+        controller.navigationItem.titleView = titleView;
+        self.navigationItem.backBarButtonItem = [[UIBarButtonItem alloc]initWithTitle:@"相簿" style:UIBarButtonItemStylePlain target:nil action:nil];
+        controller.modalPresentationStyle = UIModalPresentationFullScreen;
+        [self.navigationController pushViewController:controller animated:YES];
+        return;
+    }
     
     AlbumSettingViewController *controller = [[AlbumSettingViewController alloc]initWithAlbumId:cell.albumId andAlbumName:cell.albumName];
 //    [controller albumInfo:cell.albumId andAlbumName:cell.albumName];
