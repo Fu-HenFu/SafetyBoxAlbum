@@ -699,7 +699,7 @@
 
 /// 多选编辑按钮
 /// - Parameter button: 多选按钮
-- (void)	multiplySelectAction:(nullable UIBarButtonItem *)button {
+- (void)multiplySelectAction:(nullable UIBarButtonItem *)button {
     if (!_isEdit) {
         _isEdit = YES;
         [self.rightItem setTitle:@"取消"];
@@ -810,6 +810,12 @@
         self.updateAlbumCountBlock(self.dataArray.count, image);
         
     }
+    
+    if (self.updateGarbageBlock) {
+        self.updateGarbageBlock(_selectedEditAssets.count);
+    }
+    
+    
 }
 
 - (void)showSuccess:(NSString *)title andSubTitle:(NSString *)subTitle andCloseBtnTitle:(NSString *)closeTitle

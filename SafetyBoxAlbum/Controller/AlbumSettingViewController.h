@@ -10,11 +10,14 @@
 
 typedef void (^UpdateAlbumCountBlock)(NSInteger count, UIImage *lastestImage);
 typedef void (^UpdateDestinationAlbumCountBlock)(NSInteger albumId, NSInteger count, UIImage *lastestImage);
+typedef void(^UpdateGarbageBlock)(NSInteger deleteCount);
 
 @interface AlbumSettingViewController : UIViewController <UIImagePickerControllerDelegate, UICollectionViewDataSource, UICollectionViewDelegate>
 
 @property (nonatomic, copy) UpdateAlbumCountBlock updateAlbumCountBlock;
 @property (nonatomic, copy) UpdateDestinationAlbumCountBlock updateDestinationAlbumCountBlock;
+@property (nonatomic, copy) UpdateGarbageBlock updateGarbageBlock;
+
 - (instancetype)initWithAlbumId:(NSInteger)albumId andAlbumName:(NSString *)albumName;
 
 - (void)albumInfo:(NSInteger)albumId andAlbumName:(NSString *)albumName;

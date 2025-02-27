@@ -15,6 +15,8 @@
 #import "TPictureDetailViewController.h"
 #import "TGarbageMultiSelecteView.h"
 
+#import <SCLAlertView.h>
+
 #define EditBottomViewHeight 80
 
 @interface TGarbageViewController () {
@@ -273,6 +275,9 @@
         }
     }
     
+    [self.collectionView reloadData];
+    [self showSuccessAlert];
+    
     
     
 }
@@ -281,6 +286,14 @@
 /// - Parameter sender: 对象
 - (void)deletePictureFromAlbum:(UIButton *)sender {
     
+}
+    
+    
+- (void)showSuccessAlert {
+    SCLAlertView *alert = [[SCLAlertView alloc] initWithNewWindow];
+    alert.soundURL = [NSURL fileURLWithPath:[NSString stringWithFormat:@"%@/right_answer.mp3", [NSBundle mainBundle].resourcePath]];
+
+    [alert showInfo:self title:@"成功" subTitle:@"照片已经恢复到来源相册" closeButtonTitle:@"好的" duration:0.0f];
 }
 
 @end

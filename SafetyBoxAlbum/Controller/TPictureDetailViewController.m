@@ -10,6 +10,8 @@
 #import "Masonry.h"
 #import "TStorage.h"
 
+#import <SCLAlertView.h>
+
 NSString *kSuccessTitle = @"已生成";//@"Congratulations";
 NSString *kErrorTitle = @"Connection error";
 NSString *kNoticeTitle = @"Notice";
@@ -19,11 +21,15 @@ NSString *kSubtitle = @"新的照片已保存到相册中";//@"You've just displ
 NSString *kButtonTitle = @"好的";
 NSString *kAttributeTitle = @"Attributed string operation successfully completed.";
 
-@interface TPictureDetailViewController ()
+@interface TPictureDetailViewController () {
+    UIImage *_image;
+    NSInteger _pageIndex;
+}
 
 @property (nonatomic, strong) UIScrollView *scrollView;
 @property (nonatomic, strong) UIToolbar *toolbar;
 @property (nonatomic, strong) UIView *topToolbar;
+@property (nonatomic, strong) SCLAlertView *warningAlert;
 
 @property (nonatomic, assign) BOOL areBarsHidden;
  
@@ -33,7 +39,9 @@ NSString *kAttributeTitle = @"Attributed string operation successfully completed
 
 @property (nonatomic, strong) NSCache *imageCache;
 @property (nonatomic, assign) NSInteger totalImages;
-@property (nonatomic, strong) NSMutableSet *visibleImageViews;
+@property (nonatomic, strong) NSMutableDictionary *visibleImageViews;
+@property (nonatomic, strong) NSMutableSet *reusableZoomScrollViews; // 可复用的缩放滚动视图
+@property (nonatomic, strong) NSMutableArray *imageNameArray;
 @property (nonatomic, strong) NSDictionary *imageNameMap; // 用于存储索引和文件名的映射
 
 @property (nonatomic, strong) NSString *documentsPath;
@@ -56,16 +64,20 @@ NSString *kAttributeTitle = @"Attributed string operation successfully completed
         self.currentIndexPath = indexPath;
         self.assetsFetchResults = assetsFetchResults;
         self.imageManager = imageManager;
-        self.visibleImageViews = [NSMutableSet set];
+        self.visibleImageViews = [NSMutableDictionary dictionary];
+        
+        self.reusableZoomScrollViews = [NSMutableSet set];
         self.totalImages = assetsFetchResults.count;
         self.imageCache = [[NSCache alloc] init];
         self.albumId = albumId;
         self.albumName = albumName;
         
+        self.imageNameArray = [NSMutableArray array];
         // 初始化文件名映射（这里假设文件名是预先生成的随机字符串）
         NSMutableDictionary *map = [NSMutableDictionary dictionary];
         for (NSInteger i = 0; i < self.totalImages; i++) {
             map[@(i)] = self.assetsFetchResults[i].name;
+            [self.imageNameArray addObject:@(i)];
         }
         self.imageNameMap = [map copy];
         
@@ -94,10 +106,10 @@ NSString *kAttributeTitle = @"Attributed string operation successfully completed
 //    [self loadImageForPage:1];
     
     // 预加载第500张照片
-     [self loadImageAtIndex:self.currentIndexPath.item];
+//     [self loadImageAtIndex:self.currentIndexPath.item];
      
 
-    [self setupVisibleImagesForOffset:self.scrollView.contentOffset.x];
+//    [self setupVisibleImagesForOffset:self.scrollView.contentOffset.x];
     self.topToolbar = [[UIView alloc]init];
     [self.topToolbar setBackgroundColor:[UIColor whiteColor]];
     CALayer *topToolbarLayer = self.topToolbar.layer;
@@ -174,22 +186,26 @@ NSString *kAttributeTitle = @"Attributed string operation successfully completed
     // 添加点击手势识别器
     UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)];
     [self.view addGestureRecognizer:tapGesture];
+    
 }
 
 - (UIImage *)loadImageAtIndex:(NSInteger)index {
+//    int indexOfDict = [self.imageNameArray indexOfObject:@(index)];
+//    
+//    NSString *objKey = [[self.imageNameMap allKeys] objectAtIndex:index];
+//    NSString *fileName = self.imageNameMap[objKey];
+    NSString *filePath = [self imagePathForFileName:self.imageNameMap[@(index)]];
+    _image = [UIImage imageWithContentsOfFile:filePath];
+//    _image = [self.imageCache objectForKey:filePath];
+//    
+//    if (!_image) {
+//        _image = [UIImage imageWithContentsOfFile:filePath];
+//        if (_image) {
+//            [self.imageCache setObject:_image forKey:filePath];
+//        }
+//    }
     
-    NSString *fileName = self.imageNameMap[@(index)];
-    NSString *filePath = [self imagePathForFileName:fileName];
-    UIImage *image = [self.imageCache objectForKey:filePath];
-    
-    if (!image) {
-        image = [UIImage imageWithContentsOfFile:filePath];
-        if (image) {
-            [self.imageCache setObject:image forKey:filePath];
-        }
-    }
-    
-    return image; // 这里实际上不返回，只是为了说明加载逻辑
+    return _image; // 这里实际上不返回，只是为了说明加载逻辑
 }
 
 - (NSString *)imagePathForFileName:(NSString *)fileName {
@@ -199,62 +215,104 @@ NSString *kAttributeTitle = @"Attributed string operation successfully completed
 }
 
 - (void)setupVisibleImagesForOffset:(CGFloat)offset {
-    NSInteger pageIndex = (NSInteger)(offset / self.view.bounds.size.width);
-//    NSLog(@"这是 %f -- %f", self.scrollView.contentOffset.x, self.view.frame.size.width);
+    _pageIndex = (NSInteger)floor((offset / self.scrollView.bounds.size.width));
+//    NSLog(@"这是 %d -- %f", _pageIndex, self.view.frame.size.width);
+//    (NSInteger)floor((self.scrollView.contentOffset.x / self.scrollView.bounds.size.width));
+    // 计算当前可见的页码范围
+    NSInteger firstPage = (NSInteger)floor((self.scrollView.contentOffset.x / self.scrollView.bounds.size.width));
+    NSInteger lastPage = (NSInteger)floor((offset + self.scrollView.bounds.size.width - 1) / self.scrollView.bounds.size.width);
     
-    for (UIScrollView *subScrollView in [self.visibleImageViews copy]) {
-        UIImageView *imageView = (UIImageView *) [subScrollView subviews].firstObject;
-        NSInteger imageViewIndex = imageView.tag;
-        if (abs((int)(imageViewIndex - pageIndex)) > 1) { // 只保留当前页和前后各一页
-            UIView *tem = [self.scrollView viewWithTag:1000 + imageViewIndex];
-            [imageView removeFromSuperview];
-            [self.visibleImageViews removeObject:subScrollView];
+    // 预加载相邻的图片
+    firstPage = MAX(firstPage - 1, 0);
+    lastPage = MIN(lastPage + 1, self.assetsFetchResults.count - 1);
+    
+    for (NSNumber *pageNumber in self.visibleImageViews.allKeys) {
+        NSInteger page = [pageNumber integerValue];
+
+
+//        UIImageView *imageView = (UIImageView *) [subScrollView subviews].firstObject;
+//        NSInteger imageViewIndex = imageView.tag;
+        NSLog(@"_pageIndex:%ld; first:%ld ; last:%ld", _pageIndex, firstPage, lastPage);
+        if (page < firstPage || page > lastPage) {
+//            UIView *tem = [self.scrollView viewWithTag:(imageViewIndex)];
+//            [imageView removeFromSuperview];
+            
+            UIScrollView *subScrollView = self.visibleImageViews[pageNumber];
+            [self.visibleImageViews removeObjectForKey:pageNumber];
+//            [self.visibleImageViews removeObject:subScrollView];
             [subScrollView removeFromSuperview];
-            [subScrollView delegate];
+            [self.reusableZoomScrollViews addObject:subScrollView];
+            
+            NSLog(@"移除 可视 %d -- 回收站%ld", self.visibleImageViews.count, self.reusableZoomScrollViews.count);
         }
+//        if (abs((int)(imageViewIndex - (2000+_pageIndex))) > 2) { // 只保留当前页和前后各一页
+//            UIView *tem = [self.scrollView viewWithTag:1000 + (2000-imageViewIndex)];
+//            [imageView removeFromSuperview];
+//            [self.visibleImageViews removeObjectForKey:@(2000 - imageViewIndex)];
+////            [self.visibleImageViews removeObject:subScrollView];
+//            [subScrollView removeFromSuperview];
+//            [self.reusableZoomScrollViews addObject:subScrollView];
+//            
+////            NSLog(@"================================================= %ld", imageViewIndex);
+//        }
     }
     
     
-    
-    // 添加新的可见ImageView
-    for (NSInteger i = -1; i <= 1; i++) {
+    // 加载当前可见的图片
+    for (NSInteger page = firstPage; page <= lastPage; page++) {
         
-        NSInteger imageViewIndex = pageIndex + i;
-        if (imageViewIndex >= 0 && imageViewIndex < self.totalImages && ![self.visibleImageViews containsObject:@(imageViewIndex)]) {
+//    }
+//    // 添加新的可见ImageView
+//    for (NSInteger i = -1; i <= 1; i++) {
+        
+        NSInteger imageViewIndex =  page;
+        
+//        if (imageViewIndex >= 0 && imageViewIndex < self.totalImages && ![self.visibleImageViews.allKeys containsObject:@(imageViewIndex)]) {
+        if (!self.visibleImageViews[@(page)]) {
             
+            UIScrollView *zoomScrollView = self.reusableZoomScrollViews.anyObject;
+            if (zoomScrollView) {
+                [self.reusableZoomScrollViews removeObject:zoomScrollView];
+            } else {
+                NSLog(@"new Scrollview");
+                zoomScrollView = [[UIScrollView alloc] initWithFrame:self.view.bounds];
+                zoomScrollView.delegate = self;
+                zoomScrollView.minimumZoomScale = 1.0; // 最小缩放比例
+                zoomScrollView.maximumZoomScale = 6.0; // 最大缩放比例
+                zoomScrollView.showsHorizontalScrollIndicator = NO;
+                zoomScrollView.showsVerticalScrollIndicator = NO;
+//                zoomScrollView.tag = 1000 + imageViewIndex;
+                
+                zoomScrollView.zoomScale = 1.0;
+                
+                UIImageView *imageView = [[UIImageView alloc] initWithFrame:zoomScrollView.bounds];
+                imageView.tag = 1000;
+                NSLog(@"图片索引%ld", imageViewIndex);
+                [imageView setUserInteractionEnabled:YES];
+                [imageView setContentMode:UIViewContentModeScaleAspectFit];
+                [zoomScrollView addSubview:imageView];
+            }
             
             // 创建缩放滚动视图
-            UIScrollView *zoomScrollView = [[UIScrollView alloc] initWithFrame:self.view.bounds];
-            zoomScrollView.delegate = self;
-            zoomScrollView.minimumZoomScale = 1.0; // 最小缩放比例
-            zoomScrollView.maximumZoomScale = 6.0; // 最大缩放比例
-            zoomScrollView.showsHorizontalScrollIndicator = NO;
-            zoomScrollView.showsVerticalScrollIndicator = NO;
-            zoomScrollView.tag = 1000 + imageViewIndex;
-            
-            zoomScrollView.zoomScale = 1.0;
-            [self.scrollView addSubview:zoomScrollView];
-            
-            UIImageView *imageView = [[UIImageView alloc] initWithFrame:zoomScrollView.bounds];
-            imageView.tag = 2000 + imageViewIndex;
-            NSLog(@"图片索引%ld", imageViewIndex);
-            [imageView setUserInteractionEnabled:YES];
-            [imageView setContentMode:UIViewContentModeScaleAspectFit];
-            
-            
-            zoomScrollView.frame = CGRectMake((i + pageIndex) * self.scrollView.frame.size.width, 0,
-                                                   _scrollView.frame.size.width, _scrollView.frame.size.height);
-            
-            UIImage *image = [self loadImageAtIndex:imageViewIndex]; // 加载图片
-            imageView.image = image;
-            [zoomScrollView addSubview:imageView];
-//            NSLog(@"tag的值 %d", imageViewIndex);
-            [self.visibleImageViews addObject:zoomScrollView];
+            zoomScrollView.frame = CGRectMake((page) * self.scrollView.frame.size.width, 0,
+                                              _scrollView.frame.size.width, _scrollView.frame.size.height);
             
 
+            UIImageView *imageView = [zoomScrollView viewWithTag:1000];
+            [self loadImageAtIndex:page]; // 加载图片
+            imageView.image = _image;
+            [zoomScrollView addSubview:imageView];
+            //            NSLog(@"tag的值 %d", imageViewIndex);
+            self.visibleImageViews[@(page)] = zoomScrollView;
+            //            [self.visibleImageViews addObject:zoomScrollView];
+            
+            [self.scrollView addSubview:zoomScrollView];
         }
+//        } else {
+////            NSLog(@"done");
+//        }
     }
-    NSLog( @"--");
+//    NSLog( @"--");
 }
  
 #pragma mark - UIScrollViewDelegate
@@ -264,7 +322,7 @@ NSString *kAttributeTitle = @"Attributed string operation successfully completed
         [self setupVisibleImagesForOffset:scrollView.contentOffset.x];
 
     } else {
-        NSLog(@"hi");
+//        NSLog(@"hi");
     }
 }
 
@@ -288,6 +346,8 @@ NSString *kAttributeTitle = @"Attributed string operation successfully completed
     // 如果需要，可以在这里调整其他视图的布局
 }
 
+/// 点击分享图片
+/// - Parameter gesture: 手势
 - (void)shareButtonTapped:(UITapGestureRecognizer *)gesture {
     UIActivityIndicatorView *con = [[UIActivityIndicatorView alloc]init];
     // 准备要分享的内容
@@ -334,6 +394,9 @@ NSString *kAttributeTitle = @"Attributed string operation successfully completed
 
 }
 
+
+/// 点击编辑图片
+/// - Parameter gesture: 手势
 - (void)editButtonTapped:(UITapGestureRecognizer *)gesture {
     NSString *fileName = self.assetsFetchResults[self.currentIndexPath.item].name;
     
@@ -351,10 +414,22 @@ NSString *kAttributeTitle = @"Attributed string operation successfully completed
     
 }
 
+/// 点击删除图片
+/// - Parameter gesture: 手势
 - (void)deleteButtonTapped:(UITapGestureRecognizer *)gesture {
-    
+    self.warningAlert = [[SCLAlertView alloc] init];
+    __weak id weakself = self;
+    [self.warningAlert addButton:@"确定" actionBlock:^{
+        [weakself deletePictureFromAlbumConfirm];
+//        [weakself multiplySelectAction:nil];
+    }];
+//    [self.warningAlert setShowAnimationType:SCLAlertViewShowAnimationSlideInFromCenter];
+    [self.warningAlert showWarning:self title:@"即将删除" subTitle:@"您确定要将这些照片或视频从相册中移除?" closeButtonTitle:@"取消" duration:0];
+
 }
 
+/// 点击详情图片
+/// - Parameter gesture: 手势
 - (void)moreButtonTapped:(UITapGestureRecognizer *)gesture {
     
 }
@@ -437,6 +512,74 @@ NSString *kAttributeTitle = @"Attributed string operation successfully completed
     }
     
 }
+
+/// 移除照片,点击确认后
+- (void)deletePictureFromAlbumConfirm{
+    //  删除相册中的照片
+    //  更新相簿的总数
+    //  更新相簿的最后一张照片的信息
+    //  更新Collectionviewcell
+    //  更新相册页面总数显示
+    NSMutableDictionary *map = [self.imageNameMap mutableCopy];
+    [map removeObjectForKey:@(_pageIndex)];
+    self.imageNameMap = map.copy;
+    NSMutableArray<TPictureAudioObject *> *mutableArray = self.assetsFetchResults.mutableCopy;
+    [mutableArray removeObjectAtIndex:_pageIndex];
+    self.assetsFetchResults = mutableArray.copy;
+    
+    [self.scrollView setContentSize:CGSizeMake(self.view.bounds.size.width * self.assetsFetchResults.count, self.view.bounds.size.height)];
+    if (_pageIndex >= self.assetsFetchResults.count) {
+        _pageIndex = self.assetsFetchResults.count - 1;
+    } else {
+        
+    }
+    
+    // 4. 重新加载视图（带动画过渡）
+        [UIView animateWithDuration:0.3 animations:^{
+            _scrollView.contentOffset = CGPointMake((_pageIndex + 1) * _scrollView.frame.size.width, 0);
+            
+        } completion:^(BOOL finished) {
+            [self setupVisibleImagesForOffset: self.scrollView.contentOffset.x];
+        }];
+    
+
+    
+    
+//    for (TPictureAudioObject *pictureObj in _selectedEditAssets) {
+//        [self.storage updatePictureState:pictureObj.state == 1 ? 0 : 1  andID:pictureObj.id];
+//    }
+//    NSInteger releasePhoto = self.dataArray.count - _selectedEditAssets.count;
+//    [self.storage updateAlbumPhotoCount:_albumId andCount:releasePhoto];
+//    
+//    for (TPictureAudioObject *obj in _selectedEditAssets) {
+//        if ([self.dataArray containsObject:obj]) {
+//            [self.dataArray removeObject:obj];
+//            [self.collectionView reloadData];
+//        }
+//    }
+//    
+//    NSString *lastThumbImagePath = [(TPictureAudioObject *)self.dataArray.lastObject thumbPath];
+//    [self.storage updateAlbumLastestImagePath:lastThumbImagePath albumId:_albumId];
+//    
+//    if (self.updateAlbumCountBlock) {
+//        
+//        if (self.documentsPath.length == 0) {
+//            self.documentsPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) firstObject];
+//        }
+//        NSString *thumbPath = [self.documentsPath stringByAppendingPathComponent:[(TPictureAudioObject *)self.dataArray.lastObject thumbPath]];
+//        
+//        UIImage *image = [UIImage imageWithContentsOfFile:thumbPath];
+//        self.updateAlbumCountBlock(self.dataArray.count, image);
+//        
+//    }
+//    
+//    if (self.updateGarbageBlock) {
+//        self.updateGarbageBlock(_selectedEditAssets.count);
+//    }
+    
+    
+}
+
 
 /**
  插入数据库
