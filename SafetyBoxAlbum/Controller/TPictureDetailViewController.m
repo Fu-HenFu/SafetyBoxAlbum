@@ -41,8 +41,10 @@ NSString *kAttributeTitle = @"Attributed string operation successfully completed
 @property (nonatomic, assign) NSInteger totalImages;
 @property (nonatomic, strong) NSMutableDictionary *visibleImageViews;
 @property (nonatomic, strong) NSMutableSet *reusableZoomScrollViews; // 可复用的缩放滚动视图
-@property (nonatomic, strong) NSMutableArray *imageNameArray;
+//@property (nonatomic, strong) NSMutableArray *imageNameArray;
+@property (nonatomic, strong) NSArray *imageNameArray;
 @property (nonatomic, strong) NSDictionary *imageNameMap; // 用于存储索引和文件名的映射
+
 
 @property (nonatomic, strong) NSString *documentsPath;
 
@@ -72,15 +74,15 @@ NSString *kAttributeTitle = @"Attributed string operation successfully completed
         self.albumId = albumId;
         self.albumName = albumName;
         
-        self.imageNameArray = [NSMutableArray array];
+//        self.imageNameArray = [NSMutableArray array];
         // 初始化文件名映射（这里假设文件名是预先生成的随机字符串）
         NSMutableDictionary *map = [NSMutableDictionary dictionary];
         for (NSInteger i = 0; i < self.totalImages; i++) {
             map[@(i)] = self.assetsFetchResults[i].name;
-            [self.imageNameArray addObject:@(i)];
+//            [self.imageNameArray addObject:self.assetsFetchResults[i].name];
         }
         self.imageNameMap = [map copy];
-        
+        self.imageNameArray = [self orderKey:self.imageNameMap.allKeys];
         self.documentsPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) firstObject];
     }
     return self;
@@ -190,21 +192,18 @@ NSString *kAttributeTitle = @"Attributed string operation successfully completed
 }
 
 - (UIImage *)loadImageAtIndex:(NSInteger)index {
-//    int indexOfDict = [self.imageNameArray indexOfObject:@(index)];
-//    
-//    NSString *objKey = [[self.imageNameMap allKeys] objectAtIndex:index];
-//    NSString *fileName = self.imageNameMap[objKey];
-    NSString *filePath = [self imagePathForFileName:self.imageNameMap[@(index)]];
+//    NSString *tempPath = self.imageNameArray[index];
+    NSLog(@"LoadImageAtIndex: %ld", index);
+    NSNumber *tem = [self.imageNameArray objectAtIndex:index];
+    [self.imageNameMap objectForKey:tem];
+    NSInteger keyInDicIndex = [self.imageNameMap.allKeys indexOfObject:@(index)];
+
+//    self.imageNameMap objec
+    NSInteger numberInDic = [self.imageNameMap.allKeys indexOfObject:@(index)];
+    NSString *filePath = [self.imageNameMap objectForKey:tem];//[self.imageNameMap.allValues objectAtIndex:numberInDic];
+    filePath = [self imagePathForFileName:filePath];
+//    NSLog(@"tempPath %@ ==  %@", tempPath, filePath);
     _image = [UIImage imageWithContentsOfFile:filePath];
-//    _image = [self.imageCache objectForKey:filePath];
-//    
-//    if (!_image) {
-//        _image = [UIImage imageWithContentsOfFile:filePath];
-//        if (_image) {
-//            [self.imageCache setObject:_image forKey:filePath];
-//        }
-//    }
-    
     return _image; // 这里实际上不返回，只是为了说明加载逻辑
 }
 
@@ -224,7 +223,7 @@ NSString *kAttributeTitle = @"Attributed string operation successfully completed
     
     // 预加载相邻的图片
     firstPage = MAX(firstPage - 1, 0);
-    lastPage = MIN(lastPage + 1, self.assetsFetchResults.count - 1);
+    lastPage = MIN(lastPage + 1, self.imageNameMap.count - 1);
     
     for (NSNumber *pageNumber in self.visibleImageViews.allKeys) {
         NSInteger page = [pageNumber integerValue];
@@ -520,27 +519,66 @@ NSString *kAttributeTitle = @"Attributed string operation successfully completed
     //  更新相簿的最后一张照片的信息
     //  更新Collectionviewcell
     //  更新相册页面总数显示
-    NSMutableDictionary *map = [self.imageNameMap mutableCopy];
-    [map removeObjectForKey:@(_pageIndex)];
-    self.imageNameMap = map.copy;
-    NSMutableArray<TPictureAudioObject *> *mutableArray = self.assetsFetchResults.mutableCopy;
-    [mutableArray removeObjectAtIndex:_pageIndex];
-    self.assetsFetchResults = mutableArray.copy;
-    
-    [self.scrollView setContentSize:CGSizeMake(self.view.bounds.size.width * self.assetsFetchResults.count, self.view.bounds.size.height)];
-    if (_pageIndex >= self.assetsFetchResults.count) {
-        _pageIndex = self.assetsFetchResults.count - 1;
-    } else {
-        
+    NSInteger currentPage = (NSInteger)floor(self.scrollView.contentOffset.x / self.scrollView.bounds.size.width);
+    NSLog(@"Delete index %ld", currentPage);
+    // 如果没有图片，直接返回
+    if (self.imageNameMap.count == 0) {
+        return;
     }
     
-    // 4. 重新加载视图（带动画过渡）
-        [UIView animateWithDuration:0.3 animations:^{
-            _scrollView.contentOffset = CGPointMake((_pageIndex + 1) * _scrollView.frame.size.width, 0);
-            
-        } completion:^(BOOL finished) {
-            [self setupVisibleImagesForOffset: self.scrollView.contentOffset.x];
-        }];
+    NSNumber *currentNumber = self.imageNameArray[currentPage];
+    
+    NSMutableDictionary *map = [self.imageNameMap mutableCopy];
+    [map removeObjectForKey:currentNumber];
+    self.imageNameMap = map.copy;
+    self.imageNameArray = [self orderKey:self.imageNameMap.allKeys];
+    
+    // 更新主滚动视图的内容大小
+    self.scrollView.contentSize = CGSizeMake(self.view.bounds.size.width * self.imageNameMap.count, self.view.bounds.size.height);
+    
+    // 移除当前显示的缩放滚动视图
+        UIScrollView *currentZoomScrollView = self.visibleImageViews[@(currentPage)];
+        if (currentZoomScrollView) {
+            [currentZoomScrollView removeFromSuperview];
+            [self.visibleImageViews removeObjectForKey:@(currentPage)];
+            [self.reusableZoomScrollViews addObject:currentZoomScrollView];
+        }
+    
+    [self setupVisibleImagesForOffset:self.scrollView.contentOffset.x];
+    
+    // 如果删除的是最后一张照片，显示前一张
+        if (currentPage >= self.imageNameMap.count) {
+            currentPage = self.imageNameMap.count - 1;
+        }
+        
+        // 如果删除后没有图片了，返回上一页
+        if (self.imageNameMap.count == 0) {
+            [self.navigationController popViewControllerAnimated:YES];
+            return;
+        }
+        
+        // 滚动到下一张照片
+        [self.scrollView setContentOffset:CGPointMake(self.view.bounds.size.width * currentPage, 0) animated:YES];
+    
+    
+//    NSMutableArray<TPictureAudioObject *> *mutableArray = self.assetsFetchResults.mutableCopy;
+//    [mutableArray removeObjectAtIndex:_pageIndex];
+//    self.assetsFetchResults = mutableArray.copy;
+//    
+//    [self.scrollView setContentSize:CGSizeMake(self.view.bounds.size.width * self.assetsFetchResults.count, self.view.bounds.size.height)];
+//    if (_pageIndex >= self.assetsFetchResults.count) {
+//        _pageIndex = self.assetsFetchResults.count - 1;
+//    } else {
+//        
+//    }
+//    
+//    // 4. 重新加载视图（带动画过渡）
+//        [UIView animateWithDuration:0.3 animations:^{
+//            _scrollView.contentOffset = CGPointMake((_pageIndex + 1) * _scrollView.frame.size.width, 0);
+//            
+//        } completion:^(BOOL finished) {
+//            [self setupVisibleImagesForOffset: self.scrollView.contentOffset.x];
+//        }];
     
 
     
@@ -578,6 +616,16 @@ NSString *kAttributeTitle = @"Attributed string operation successfully completed
 //    }
     
     
+}
+
+- (NSArray *)orderKey:(NSArray *)oriArray {
+    NSArray *descendingArr = [oriArray sortedArrayUsingComparator:^NSComparisonResult(NSNumber*  _Nonnull obj1, NSNumber*  _Nonnull obj2) {
+        if ([obj1 compare:obj2] > 0) {
+            return YES;
+        }
+        return NO;
+    }];
+    return descendingArr;
 }
 
 
