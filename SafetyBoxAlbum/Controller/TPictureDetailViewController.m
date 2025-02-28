@@ -223,7 +223,7 @@ NSString *kAttributeTitle = @"Attributed string operation successfully completed
     
     // 预加载相邻的图片
     firstPage = MAX(firstPage - 1, 0);
-    lastPage = MIN(lastPage + 1, self.imageNameMap.count - 1);
+    lastPage = MIN(lastPage + 1, self.assetsFetchResults.count - 1);
     
     for (NSNumber *pageNumber in self.visibleImageViews.allKeys) {
         NSInteger page = [pageNumber integerValue];
@@ -397,15 +397,22 @@ NSString *kAttributeTitle = @"Attributed string operation successfully completed
 /// 点击编辑图片
 /// - Parameter gesture: 手势
 - (void)editButtonTapped:(UITapGestureRecognizer *)gesture {
-    NSString *fileName = self.assetsFetchResults[self.currentIndexPath.item].name;
+    @try {
+        NSString *fileName = self.assetsFetchResults[self.currentIndexPath.item].name;
+        
+        NSString *filePath = [self imagePathForFileName:fileName];
+        UIImage *image = [self.imageCache objectForKey:filePath];
+        CGSize imageSize = [image size];
+        CLPhotoShopViewController *vc = [[CLPhotoShopViewController alloc] init];
+        vc.orgImage = image;
+        vc.delegate = self;
+        [self presentViewController:vc animated:true completion:nil];
+    } @catch (NSException *exception) {
+        NSLog(@" ERROR %@", exception.description);
+    } @finally {
+        
+    }
     
-    NSString *filePath = [self imagePathForFileName:fileName];
-    UIImage *image = [self.imageCache objectForKey:filePath];
-    CGSize imageSize = [image size];
-    CLPhotoShopViewController *vc = [[CLPhotoShopViewController alloc] init];
-    vc.orgImage = image;
-    vc.delegate = self;
-    [self presentViewController:vc animated:true completion:nil];
     
 }
 
@@ -520,6 +527,14 @@ NSString *kAttributeTitle = @"Attributed string operation successfully completed
     //  更新Collectionviewcell
     //  更新相册页面总数显示
     NSInteger currentPage = (NSInteger)floor(self.scrollView.contentOffset.x / self.scrollView.bounds.size.width);
+    
+    NSMutableArray *mutableAssetsResultArray = self.assetsFetchResults.mutableCopy;
+    TPictureAudioObject *needToDeleteObj = [mutableAssetsResultArray objectAtIndex:currentPage];
+    [mutableAssetsResultArray removeObject:needToDeleteObj];
+    self.assetsFetchResults = mutableAssetsResultArray.copy;
+    
+    [self deleteRecordInDB:needToDeleteObj];
+    
     NSLog(@"Delete index %ld", currentPage);
     // 如果没有图片，直接返回
     if (self.imageNameMap.count == 0) {
@@ -579,6 +594,7 @@ NSString *kAttributeTitle = @"Attributed string operation successfully completed
 //        } completion:^(BOOL finished) {
 //            [self setupVisibleImagesForOffset: self.scrollView.contentOffset.x];
 //        }];
+    
     
 
     
@@ -641,6 +657,12 @@ NSString *kAttributeTitle = @"Attributed string operation successfully completed
             [self showSuccess];
         }];
     });
+}
+
+/// 修改对象记录状态为0
+/// - Parameter pictureObject: 对象
+- (void)deleteRecordInDB:(TPictureAudioObject *)pictureObject {
+    [self.storage updatePictureState:USELESS_STATE_TYPE andID:pictureObject.id];
 }
 
 - (void)showSuccess

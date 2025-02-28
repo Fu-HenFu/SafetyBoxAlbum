@@ -574,7 +574,7 @@
             [picker dismissViewControllerAnimated:YES completion:nil];
 //        });
 //    });
-    NSLog(@"狗窝饿");
+
     
 }
 
