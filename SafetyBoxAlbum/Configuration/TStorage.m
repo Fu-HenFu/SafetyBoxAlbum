@@ -93,7 +93,7 @@ static FMDatabaseQueue *_queue;
         NSString *sql = [NSString stringWithFormat:UpdateAlbumPhotoCountSQL, photoCount, albumId];
         
         BOOL flag = [db executeUpdate:sql];
-        if (flag) {
+        if (!flag) {
             NSLog(@"error");
         }
         

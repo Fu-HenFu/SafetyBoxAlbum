@@ -39,6 +39,10 @@ static NSString* const kCellConstant = @"CollectiveItem";
     }
     self.garbageArray = [self.storage queryGarbagePicture:0 andFakeType:NOT_FAKE].count;
     // 调用父类的初始化方法
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(ToGarbageNotification:) name:DeleteToGarbageNotification object:nil];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(lastestPhotoNotification:) name:ChangeLastestPhotoNotification object:nil];
     return self;
 }
 
@@ -306,6 +310,7 @@ static NSString* const kCellConstant = @"CollectiveItem";
         // 配置单元格的属性，包括传入自定义值
         
         albumObject = [self.dataArray objectAtIndex:indexPath.item];
+        (TPictureAudioObject *)self.dataArray.lastObject;
         cell.albumName = albumObject.name;
         cell.albumId = albumObject.id;
         cell.detailLabel.text = [NSString stringWithFormat:@"%ld个文件", albumObject.photoCount];
@@ -569,5 +574,57 @@ static NSString* const kCellConstant = @"CollectiveItem";
         make.top.left.and.right.equalTo(self.view);
         make.bottom.equalTo(self.toolBar2.mas_top);
     }];
+}
+
+- (void)ToGarbageNotification:(NSNotification *)notification {
+    NSDictionary *data = notification.object;
+    NSNumber *deleteCount = data[DeleteToGarbageNotificationCountKey];
+    
+    NSInteger albumCount = [data[@"originAlbumCountKey"] integerValue];
+    NSInteger albumId = [data[@"CellId"] integerValue];
+    
+    TAlbumCollectionViewCell *cell = [self.collectionView cellForItemAtIndexPath:[NSIndexPath indexPathForItem:self.dataArray.count - 1 inSection:0]];
+    if (cell == nil) {
+        return;
+    }
+    self.garbageArray += deleteCount.intValue;
+    cell.detailLabel.text = [NSString stringWithFormat:@"%ld个文件", self.garbageArray];
+    
+    int albumIndex = 0;
+    for (TAlbumObject *obj in self.dataArray) {
+        if (obj.id == albumId) {
+            TAlbumCollectionViewCell *oriCell = [self.collectionView cellForItemAtIndexPath:[NSIndexPath indexPathForItem:albumIndex inSection:0]];
+//            TAlbumCollectionViewCell *oriCell = [self.collectionView cellForItemAtIndexPath:[NSIndexPath indexPathWithIndex:albumIndex]];
+            [oriCell detailLabel].text = [NSString stringWithFormat:@"%ld个文件", albumCount];
+//            [cell setDetailLabel:[NSString stringWithFormat:@"%ld个文件", albumCount]];
+            break;
+        }
+        albumIndex++;
+    }
+    
+    NSLog(@"cell");
+//    oriCell
+}
+
+- (void)lastestPhotoNotification:(NSNotification *)notification {
+    NSDictionary *data = notification.object;
+    NSNumber *albumId = data[ChangeLastestPhotoNotificationKey];
+    NSString *lastestPaht = data[@"LastestPhotoPath"];
+    
+    for (TAlbumObject *temp in self.dataArray) {
+        if (temp.id == albumId.integerValue) {
+            NSInteger indexOfTemp = [self.dataArray indexOfObject:temp];
+            
+            UIImage *thumbImage = nil;
+
+                NSString *thumbPath = [_documentPath stringByAppendingPathComponent:lastestPaht];
+                thumbImage = [UIImage imageWithContentsOfFile:thumbPath];
+            
+            TAlbumCollectionViewCell *cell = [self.collectionView cellForItemAtIndexPath:[NSIndexPath indexPathForItem:indexOfTemp inSection:0]];
+            [cell.iconImageView setImage:thumbImage];
+//            [self.collectionView reloadItemsAtIndexPaths:@[[NSIndexPath indexPathForItem:indexOfTemp inSection:0]]];
+            break;
+        }
+    }
 }
 @end

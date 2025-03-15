@@ -14,7 +14,7 @@ target 'SafetyBoxAlbum' do
   pod 'SCLAlertView-Objective-C'
   pod 'TZImagePickerController' 
 #  pod 'MMNumberKeyboard'
-  pod 'THPinViewController', '~> 1.2.6'.
+  pod 'THPinViewController', '~> 1.2.6'
 
 #  pod "PSImageEditors"
   # Pods for SafetyBoxAlbum

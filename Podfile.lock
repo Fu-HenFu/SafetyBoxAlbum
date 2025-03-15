@@ -91,7 +91,7 @@ DEPENDENCIES:
   - Masonry (~> 1.1.0)
   - SCLAlertView-Objective-C
   - SDWebImage (~> 5.20.0)
-  - THPinViewController
+  - THPinViewController (~> 1.2.6)
   - TZImagePickerController
 
 SPEC REPOS:
@@ -123,6 +123,6 @@ SPEC CHECKSUMS:
   THPinViewController: e0dc717a61c8a0a0f251764da26b9ca8a4fd2ec1
   TZImagePickerController: d084a7b97c82d387e7669dd86dc9a9057500aacf
 
-PODFILE CHECKSUM: a6a2f9b53b202c938733a4f316d3fd15c848b601
+PODFILE CHECKSUM: 30be4b59afbbb5aa1b5163fd224eecc15896e8ea
 
 COCOAPODS: 1.16.2

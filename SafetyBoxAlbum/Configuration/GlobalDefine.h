@@ -11,6 +11,12 @@
 #define ST_APP_BUILD   ([[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"])
 #define ValuableState 1
 
+#define DeleteToGarbageNotification @"DeleteToGarbageNotification"
+#define DeleteToGarbageNotificationCountKey @"DeleteToGarbageNotificationCountKey"
+
+#define ChangeLastestPhotoNotification @"ChangeLastestPhotoNotification"
+#define ChangeLastestPhotoNotificationKey @"ChangeLastestPhotoNotificationKey"
+
 typedef enum : NSUInteger {
     PICTURE_TYPE = 1,
     AUDIO_TYPE,

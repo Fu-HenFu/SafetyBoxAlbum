@@ -37,7 +37,7 @@ NSString *kAttributeTitle = @"Attributed string operation successfully completed
 @property (nonatomic, strong) NSArray<TPictureAudioObject *> *assetsFetchResults;
 @property (nonatomic, strong) PHCachingImageManager *imageManager;
 
-@property (nonatomic, strong) NSCache *imageCache;
+@property (nonatomic, strong) NSCache *imageCache;  //  已无使用
 @property (nonatomic, assign) NSInteger totalImages;
 @property (nonatomic, strong) NSMutableDictionary *visibleImageViews;
 @property (nonatomic, strong) NSMutableSet *reusableZoomScrollViews; // 可复用的缩放滚动视图
@@ -397,21 +397,21 @@ NSString *kAttributeTitle = @"Attributed string operation successfully completed
 /// 点击编辑图片
 /// - Parameter gesture: 手势
 - (void)editButtonTapped:(UITapGestureRecognizer *)gesture {
-    @try {
+//    @try {
         NSString *fileName = self.assetsFetchResults[self.currentIndexPath.item].name;
         
         NSString *filePath = [self imagePathForFileName:fileName];
         UIImage *image = [self.imageCache objectForKey:filePath];
         CGSize imageSize = [image size];
         CLPhotoShopViewController *vc = [[CLPhotoShopViewController alloc] init];
-        vc.orgImage = image;
+        vc.orgImage = _image;
         vc.delegate = self;
         [self presentViewController:vc animated:true completion:nil];
-    } @catch (NSException *exception) {
-        NSLog(@" ERROR %@", exception.description);
-    } @finally {
-        
-    }
+//    } @catch (NSException *exception) {
+//        NSLog(@" ERROR %@", exception.description);
+//    } @finally {
+//        
+//    }
     
     
 }
@@ -450,7 +450,7 @@ NSString *kAttributeTitle = @"Attributed string operation successfully completed
 //    NSLog(@"Current image index: %ld", (long)currentIndex);
     
     if (scrollView != self.scrollView) {
-        UIView *tempView = [scrollView viewWithTag:currentIndex + 2000];
+        UIView *tempView = [scrollView viewWithTag:1000];
         return tempView; // 返回当前页的ImageView[4]
     }
     return nil;
@@ -552,85 +552,44 @@ NSString *kAttributeTitle = @"Attributed string operation successfully completed
     self.scrollView.contentSize = CGSizeMake(self.view.bounds.size.width * self.imageNameMap.count, self.view.bounds.size.height);
     
     // 移除当前显示的缩放滚动视图
-        UIScrollView *currentZoomScrollView = self.visibleImageViews[@(currentPage)];
-        if (currentZoomScrollView) {
-            [currentZoomScrollView removeFromSuperview];
-            [self.visibleImageViews removeObjectForKey:@(currentPage)];
-            [self.reusableZoomScrollViews addObject:currentZoomScrollView];
-        }
+    UIScrollView *currentZoomScrollView = self.visibleImageViews[@(currentPage)];
+    if (currentZoomScrollView) {
+        [currentZoomScrollView removeFromSuperview];
+        [self.visibleImageViews removeObjectForKey:@(currentPage)];
+        [self.reusableZoomScrollViews addObject:currentZoomScrollView];
+    }
     
     [self setupVisibleImagesForOffset:self.scrollView.contentOffset.x];
     
     // 如果删除的是最后一张照片，显示前一张
-        if (currentPage >= self.imageNameMap.count) {
-            currentPage = self.imageNameMap.count - 1;
-        }
+    if (currentPage >= self.imageNameMap.count) {
+        currentPage = self.imageNameMap.count - 1;
         
-        // 如果删除后没有图片了，返回上一页
-        if (self.imageNameMap.count == 0) {
-            [self.navigationController popViewControllerAnimated:YES];
-            return;
-        }
+        NSString *fileName = self.assetsFetchResults.lastObject.name;
+        fileName = [@"thumb" stringByAppendingPathComponent:fileName];
+//        NSString *filePath = [self imagePathForFileName:fileName];
+        UIImage *image = [self.imageCache objectForKey:fileName];
+        NSDictionary *changeDictionary = @{ChangeLastestPhotoNotificationKey: @(_albumId), @"LastestPhotoPath": fileName};
+//        changeDictionary[ChangeLastestPhotoNotificationKey] = _albumId;
         
-        // 滚动到下一张照片
-        [self.scrollView setContentOffset:CGPointMake(self.view.bounds.size.width * currentPage, 0) animated:YES];
+        [self updateAlbumLastestImagePath:fileName];
+        
+        [[NSNotificationCenter defaultCenter]postNotificationName:ChangeLastestPhotoNotification object:changeDictionary];
+    }
     
+    // 如果删除后没有图片了，返回上一页
+    if (self.imageNameMap.count == 0) {
+        [self.navigationController popViewControllerAnimated:YES];
+        return;
+    }
     
-//    NSMutableArray<TPictureAudioObject *> *mutableArray = self.assetsFetchResults.mutableCopy;
-//    [mutableArray removeObjectAtIndex:_pageIndex];
-//    self.assetsFetchResults = mutableArray.copy;
-//    
-//    [self.scrollView setContentSize:CGSizeMake(self.view.bounds.size.width * self.assetsFetchResults.count, self.view.bounds.size.height)];
-//    if (_pageIndex >= self.assetsFetchResults.count) {
-//        _pageIndex = self.assetsFetchResults.count - 1;
-//    } else {
-//        
-//    }
-//    
-//    // 4. 重新加载视图（带动画过渡）
-//        [UIView animateWithDuration:0.3 animations:^{
-//            _scrollView.contentOffset = CGPointMake((_pageIndex + 1) * _scrollView.frame.size.width, 0);
-//            
-//        } completion:^(BOOL finished) {
-//            [self setupVisibleImagesForOffset: self.scrollView.contentOffset.x];
-//        }];
+    // 滚动到下一张照片
+    [self.scrollView setContentOffset:CGPointMake(self.view.bounds.size.width * currentPage, 0) animated:YES];
     
-    
+}
 
-    
-    
-//    for (TPictureAudioObject *pictureObj in _selectedEditAssets) {
-//        [self.storage updatePictureState:pictureObj.state == 1 ? 0 : 1  andID:pictureObj.id];
-//    }
-//    NSInteger releasePhoto = self.dataArray.count - _selectedEditAssets.count;
-//    [self.storage updateAlbumPhotoCount:_albumId andCount:releasePhoto];
-//    
-//    for (TPictureAudioObject *obj in _selectedEditAssets) {
-//        if ([self.dataArray containsObject:obj]) {
-//            [self.dataArray removeObject:obj];
-//            [self.collectionView reloadData];
-//        }
-//    }
-//    
-//    NSString *lastThumbImagePath = [(TPictureAudioObject *)self.dataArray.lastObject thumbPath];
-//    [self.storage updateAlbumLastestImagePath:lastThumbImagePath albumId:_albumId];
-//    
-//    if (self.updateAlbumCountBlock) {
-//        
-//        if (self.documentsPath.length == 0) {
-//            self.documentsPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) firstObject];
-//        }
-//        NSString *thumbPath = [self.documentsPath stringByAppendingPathComponent:[(TPictureAudioObject *)self.dataArray.lastObject thumbPath]];
-//        
-//        UIImage *image = [UIImage imageWithContentsOfFile:thumbPath];
-//        self.updateAlbumCountBlock(self.dataArray.count, image);
-//        
-//    }
-//    
-//    if (self.updateGarbageBlock) {
-//        self.updateGarbageBlock(_selectedEditAssets.count);
-//    }
-    
+- (void)updateAlbumLastestImagePath:(NSString *)imagePath {
+    [self.storage updateAlbumLastestImagePath:imagePath albumId:self.albumId];
     
 }
 
@@ -663,6 +622,18 @@ NSString *kAttributeTitle = @"Attributed string operation successfully completed
 /// - Parameter pictureObject: 对象
 - (void)deleteRecordInDB:(TPictureAudioObject *)pictureObject {
     [self.storage updatePictureState:USELESS_STATE_TYPE andID:pictureObject.id];
+    
+    
+    NSInteger releasePhoto = self.assetsFetchResults.count;
+    [self.storage updateAlbumPhotoCount:_albumId andCount:releasePhoto];
+    
+//    [self updateAlbumLastestImagePath:lastestImagePathStr];
+    NSDictionary *data = @{DeleteToGarbageNotificationCountKey: @1, @"originAlbumCountKey": @(releasePhoto), @"CellId": @(self.albumId)};
+
+    
+    [[NSNotificationCenter defaultCenter] postNotificationName:DeleteToGarbageNotification
+                                                          object:data];
+    
 }
 
 - (void)showSuccess

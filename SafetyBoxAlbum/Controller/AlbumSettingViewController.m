@@ -91,7 +91,7 @@
         [self.navigationItem setRightBarButtonItem:self.rightItem];
         self.storage = [TStorage shareStorage];
         [self refetchDataFromDatabase];
-
+        
     }
     return self;
 }
@@ -163,7 +163,7 @@
     // 初始化UIImagePickerController
     self.imagePickerController = [[UIImagePickerController alloc] init];
     self.imagePickerController.delegate = self;
-
+    
     
     self.editBottomView = [[TMultiView alloc]initWithFrame:CGRectMake(0, 0, _screenWidth, 0)];
     
@@ -173,18 +173,18 @@
     [self.editBottomView.moveButton addTarget:self action:@selector(movePictureToAnotherAlbum:) forControlEvents:UIControlEventTouchUpInside];
     [self.editBottomView.deleteButton addTarget:self action:@selector(deletePictureFromAlbum:) forControlEvents:UIControlEventTouchUpInside];
     [self.editBottomView mas_makeConstraints:^(MASConstraintMaker *make) {
-                if (@available(iOS 11.0, *)) {
-                    // 对于iOS 11及以上版本，使用safeAreaLayoutGuide
-                    make.top.equalTo(self.collectionView.mas_bottom).offset(0);
-                    make.centerX.equalTo(self.view.mas_centerX);
-                    make.height.equalTo(@(EditBottomViewHeight));
-                    make.width.equalTo(@(self.screenWidth));
-                } else {
-                    // 对于iOS 11以下版本，使用topLayoutGuide和bottomLayoutGuide
-                    make.top.equalTo(self.mas_topLayoutGuideBottom);
-                    make.left.and.right.equalTo(self.view);
-                    make.bottom.equalTo(self.mas_bottomLayoutGuideTop);
-                }
+        if (@available(iOS 11.0, *)) {
+            // 对于iOS 11及以上版本，使用safeAreaLayoutGuide
+            make.top.equalTo(self.collectionView.mas_bottom).offset(0);
+            make.centerX.equalTo(self.view.mas_centerX);
+            make.height.equalTo(@(EditBottomViewHeight));
+            make.width.equalTo(@(self.screenWidth));
+        } else {
+            // 对于iOS 11以下版本，使用topLayoutGuide和bottomLayoutGuide
+            make.top.equalTo(self.mas_topLayoutGuideBottom);
+            make.left.and.right.equalTo(self.view);
+            make.bottom.equalTo(self.mas_bottomLayoutGuideTop);
+        }
     }];
     
 }
@@ -194,13 +194,25 @@
     
     [super viewDidAppear:animated];
     
+    
+    NSArray *tempArray = [self.storage queryPicture:USEFUL_STATE_TYPE andAlbumId:self.albumId];
+    
+    if (self.dataArray.count < tempArray.count) {
+        if (self.updateGarbageBlock) {
+            
+            UIImage *destiationImage = [UIImage imageWithContentsOfFile: [self.documentsPath stringByAppendingPathComponent:[(TPictureAudioObject *)tempArray.lastObject thumbPath]]];
+            //            self.updateGarbageBlock(abs(self.dataArray.count - tempArray.count));
+            self.updateDestinationAlbumCountBlock(self.albumId, tempArray.count, destiationImage);
+        }
+    }
+    
     // 重新从数据库获取数据
     [self.dataArray removeAllObjects];
-    [self.dataArray addObjectsFromArray:[self.storage queryPicture:USEFUL_STATE_TYPE andAlbumId:self.albumId]];
+    [self.dataArray addObjectsFromArray:tempArray];
     
     [self.collectionView reloadData];
     [self scrollToLastItem];
-//    [self refetchDataFromDatabase];
+    
 }
 
 - (void)closeAction:(UIButton *)sender {
@@ -214,12 +226,12 @@
 {
     CGFloat screenWidth = [UIScreen mainScreen].bounds.size.width;
     CGFloat screenHeight = [UIScreen mainScreen].bounds.size.height;
-//    if (self.createItemView == nil) {
-        self.createItemView = [[TCreatePhotoView alloc]initWithFrame:CGRectMake(0, 0 , screenWidth, screenHeight)];
-        [self.createItemView.pictureButton addTarget:self action:@selector(selectPhoto:) forControlEvents:UIControlEventTouchUpInside];
-        [self.createItemView.cameraButton addTarget:self action:@selector(takePhoto:) forControlEvents:UIControlEventTouchUpInside];
-        
-//    }
+    //    if (self.createItemView == nil) {
+    self.createItemView = [[TCreatePhotoView alloc]initWithFrame:CGRectMake(0, 0 , screenWidth, screenHeight)];
+    [self.createItemView.pictureButton addTarget:self action:@selector(selectPhoto:) forControlEvents:UIControlEventTouchUpInside];
+    [self.createItemView.cameraButton addTarget:self action:@selector(takePhoto:) forControlEvents:UIControlEventTouchUpInside];
+    
+    //    }
     
     
     // 添加弹出视图到窗口
@@ -258,13 +270,12 @@
 - (void)selectPhoto:(id)sender {
     [self dismissPopupView];
     [self pushImagePickerController];
-//    [self presentPhotoPickerViewControllerWithStyle:LGShowImageTypeImagePicker];
-
+    //    [self presentPhotoPickerViewControllerWithStyle:LGShowImageTypeImagePicker];
+    
 }
 
-/**
-使用照相机拍照
- */
+/// 使用照相机拍照
+/// - Parameter sender:
 - (void)takePhoto:(id)sender {
     [self dismissPopupView];
     // 检查相机是否可用
@@ -301,15 +312,15 @@
     if (imageName) {
         NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
         NSString *documentsDirectory = [paths firstObject];
-        NSString *filePath = [[documentsDirectory stringByAppendingPathComponent:@"thumb"] stringByAppendingPathComponent:imageName];	
+        NSString *filePath = [[documentsDirectory stringByAppendingPathComponent:@"thumb"] stringByAppendingPathComponent:imageName];
         UIImage *cellImage = [UIImage imageNamed:filePath];
         cell.imageView.image = cellImage;
-
+        
     }
-
+    
     return cell;
 }
-// 
+//
 
 #pragma mark - UICollectionViewDelegate 方法
 
@@ -338,20 +349,20 @@
         NSString *documentsDirectory = [paths firstObject];
         NSString *filePath = [documentsDirectory stringByAppendingPathComponent:imageName];
         UIImage *cellImage = [UIImage imageNamed:filePath];
-
+        
         
         // 准备跳转到全屏图片展示视图控制器
         //        UIImage *selectedImage = self.images[indexPath.item];
         TPictureDetailViewController *controller = [[TPictureDetailViewController alloc]initWithIndexPath:indexPath assetsFetchResults:self.dataArray imageManager:self.imageManager andAlbumId:self.albumId andAlbumName:self.albumName];
         controller.image = cellImage;
         controller.thumbSize = cellImage.size;
-
+        
         [controller setModalPresentationStyle:UIModalPresentationFullScreen];
         [self presentViewController:controller animated:YES completion:^{
-                    
+            
         }];
     }
-
+    
 }
 
 - (void)collectionView:(UICollectionView *)collectionView didDeselectItemAtIndexPath:(NSIndexPath *)indexPath {
@@ -373,15 +384,13 @@
     }
 }
 
-
-/**
- 请求删除相册中的照片
- */
+/// 请求删除相册中的照片
+/// - Parameter assets: 删除的照片
 - (void)askUserToDeletePhotoWithURL:(NSArray *)assets {
     [[PHPhotoLibrary sharedPhotoLibrary] performChanges:^{
         NSMutableArray *urlArray = [NSMutableArray array];
         for (PHAsset *asset in assets) {
-
+            
             if (asset) {
                 [PHAssetChangeRequest deleteAssets:@[asset]];
             }
@@ -395,7 +404,7 @@
         }
         
     }];
-
+    
 }
 
 // 处理通知的方法
@@ -405,8 +414,8 @@
     NSArray *selectedArr = userInfo[@"selectAssets"];
     NSUInteger insertIndex = 0;
     NSMutableArray *tempDataArray = [NSMutableArray array];
-
-
+    
+    
 }
 
 /**
@@ -422,17 +431,17 @@
     self.waitingAlert.backgroundType = SCLAlertViewBackgroundTransparent;
     
     [self.waitingAlert showWaiting:self title:@"稍等..."
-            subTitle:@"正在导入相册,请等待一下" closeButtonTitle:nil duration:0];
+                          subTitle:@"正在导入相册,请等待一下" closeButtonTitle:nil duration:0];
     
- 
+    
 }
 
 - (void)showSuccess:(nullable NSString *)albumName {
     [self scrollToLastItem];
     self.successAlert = [[SCLAlertView alloc] initWithNewWindow];
-
+    
     self.successAlert.soundURL = [NSURL fileURLWithPath:[NSString stringWithFormat:@"%@/right_answer.mp3", [NSBundle mainBundle].resourcePath]];
-
+    
     [self.successAlert addButton:@"好的" actionBlock:^{
         [self scrollToLastItem];
         
@@ -444,7 +453,7 @@
     
     
     [self.successAlert showSuccess:@"完成" subTitle:[NSString stringWithFormat:@"已移入相册%@", albumName] closeButtonTitle:nil duration:0.0f];
-
+    
 }
 
 
@@ -455,18 +464,18 @@
     int insertIndex = self.dataArray.count;
     [self.dataArray addObject:pictureObject];
     [self.collectionView performBatchUpdates:^{
-            
-            NSMutableArray *indexPaths = [NSMutableArray array];
         
-            [indexPaths addObject:[NSIndexPath indexPathForItem:insertIndex inSection:0]];
-         
+        NSMutableArray *indexPaths = [NSMutableArray array];
         
-            [self.collectionView insertItemsAtIndexPaths:indexPaths];
-        } completion:^(BOOL finished) {
-//            if (self.updateAlbumCountBlock) {
-//                self.updateAlbumCountBlock(self.dataArray.count);
-//            }
-        }];
+        [indexPaths addObject:[NSIndexPath indexPathForItem:insertIndex inSection:0]];
+        
+        
+        [self.collectionView insertItemsAtIndexPaths:indexPaths];
+    } completion:^(BOOL finished) {
+        //            if (self.updateAlbumCountBlock) {
+        //                self.updateAlbumCountBlock(self.dataArray.count);
+        //            }
+    }];
 }
 
 - (void)addRecordInDB: (TPictureAudioObject *) pictureObject{
@@ -476,7 +485,7 @@
 
 - (void)updateAlbumPhotoCount:(NSInteger)photoCount andAlbumId:(NSInteger)albumId {
     [self.storage updateAlbumPhotoCount:albumId andCount:photoCount];
-
+    
 }
 
 /// 更新Album表的封面照片地址
@@ -500,9 +509,9 @@
     [self.collectionView reloadData];
     [self scrollToLastItem];
     
-//    if (self.updateAlbumCountBlock) {
-//        self.updateAlbumCountBlock(self.dataArray.count);
-//    }
+    //    if (self.updateAlbumCountBlock) {
+    //        self.updateAlbumCountBlock(self.dataArray.count);
+    //    }
 }
 
 - (void)scrollToLastItem {
@@ -518,63 +527,69 @@
 
 - (void)pushImagePickerController {
     TZImagePickerController *imagePickerVc = [[TZImagePickerController alloc] initWithMaxImagesCount:40 delegate:self];
-
+    
     // You can get the photos by block, the same as by delegate.
     // 你可以通过block或者代理，来得到用户选择的照片.
-//    [imagePickerVc setDidFinishPickingPhotosHandle:^(NSArray<UIImage *> *photos, NSArray *assets, BOOL isSelectOriginalPhoto) {
-//
-//    }];
+    //    [imagePickerVc setDidFinishPickingPhotosHandle:^(NSArray<UIImage *> *photos, NSArray *assets, BOOL isSelectOriginalPhoto) {
+    //
+    //    }];
     [self presentViewController:imagePickerVc animated:YES completion:nil];
 }
 
 
 /// 使用照相机后,返回拍摄的照片
+/// - Parameters:
+///   - picker:
+///   - info:
 - (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary<UIImagePickerControllerInfoKey,id> *)info {
     
-//    dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
-//    dispatch_async(queue, ^{
-        UIImage *image = info[UIImagePickerControllerOriginalImage];
-        
-        if (self.documentsPath.length == 0) {
-            self.documentsPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) firstObject];
-        }
-        
-        NSString *identifierStr = [NSString stringWithFormat:@"%@.PNG", generateUniqueString()];
-        NSString *imagePath = [self.documentsPath stringByAppendingPathComponent:identifierStr];
-            
-        NSData *imageData = UIImagePNGRepresentation(image);
-        [imageData writeToFile:imagePath atomically:YES];
-        
-        NSString *thumbFilePath = [[self.documentsPath stringByAppendingPathComponent:@"thumb"] stringByAppendingPathComponent:identifierStr];
-        
-        CGSize thumbnailSize = CGSizeMake(300, 300);
-        UIImage *thumbnailImage = [self resizeImage:image withSize:thumbnailSize];
-        
-        NSData *thumbImageData = UIImagePNGRepresentation(thumbnailImage);
-        [thumbImageData writeToFile:thumbFilePath atomically:YES];
-            
-        NSLog(@"Image saved to %@", imagePath);
-            
-        
-        TPictureAudioObject *pictureObject = [[TPictureAudioObject alloc]init];
-        [pictureObject setName:identifierStr];
-        [pictureObject setPath:imagePath];
-        [pictureObject setThumbPath:thumbFilePath];
-        [pictureObject setType:PICTURE_TYPE];
-        [pictureObject setState: USEFUL_STATE_TYPE];
-        [pictureObject setAlbumName: self.albumName];
-        [pictureObject setAlbumId: self.albumId];
-        [self addRecordInDB:pictureObject];
-        //  update Album表
-        NSInteger totalPhotoCount = self.dataArray.count + 1;
-        [self updateAlbumPhotoCount:totalPhotoCount andAlbumId:self.albumId];
-
-        
-//        dispatch_async(dispatch_get_main_queue(), ^{
-            [picker dismissViewControllerAnimated:YES completion:nil];
+    //    dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+    //    dispatch_async(queue, ^{
+    UIImage *image = info[UIImagePickerControllerOriginalImage];
+    
+    if (self.documentsPath.length == 0) {
+        self.documentsPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) firstObject];
+    }
+    
+    NSString *identifierStr = [NSString stringWithFormat:@"%@.PNG", generateUniqueString()];
+    NSString *imagePath = [self.documentsPath stringByAppendingPathComponent:identifierStr];
+//    NSString *imagePath = identifierStr;
+    
+    NSData *imageData = UIImagePNGRepresentation(image);
+    [imageData writeToFile:imagePath atomically:YES];
+    
+    NSString *thumbFilePath = [[self.documentsPath stringByAppendingPathComponent:@"thumb"] stringByAppendingPathComponent:identifierStr];
+    NSString *thumbFileRelativePath = [NSString stringWithFormat:@"thumb/%@", identifierStr];
+    
+    CGSize thumbnailSize = CGSizeMake(120, 120);
+    UIImage *thumbnailImage = [self resizeImage:image withSize:thumbnailSize];
+    
+    NSData *thumbImageData = UIImagePNGRepresentation(thumbnailImage);
+    [thumbImageData writeToFile:thumbFilePath atomically:YES];
+    
+    NSLog(@"Image saved to %@", imagePath);
+    
+    
+    TPictureAudioObject *pictureObject = [[TPictureAudioObject alloc]init];
+    [pictureObject setName:identifierStr];
+    [pictureObject setPath:identifierStr];
+    [pictureObject setThumbPath:thumbFileRelativePath];
+    [pictureObject setType:PICTURE_TYPE];
+    [pictureObject setState: USEFUL_STATE_TYPE];
+    [pictureObject setAlbumName: self.albumName];
+    [pictureObject setAlbumId: self.albumId];
+    [self addRecordInDB:pictureObject];
+    //  update Album表
+    NSInteger totalPhotoCount = self.dataArray.count + 1;
+    [self updateAlbumPhotoCount:totalPhotoCount andAlbumId:self.albumId];
+    
+    [self updateAlbumLastestImagePath:thumbFilePath];
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [picker dismissViewControllerAnimated:YES completion:nil];
+    });
 //        });
-//    });
-
+    
     
 }
 
@@ -584,6 +599,9 @@
 ///   - image: 旧图片
 ///   - size: 新图片的尺寸
 - (UIImage *)resizeImage:(UIImage *)image withSize:(CGSize)size {
+    
+    CGFloat scale = size.width /image.size.width;
+    size.height = image.size.height * scale;
     UIGraphicsBeginImageContextWithOptions(size, NO, 0.0);
     [image drawInRect:CGRectMake(0, 0, size.width, size.height)];
     UIImage *resizedImage = UIGraphicsGetImageFromCurrentImageContext();
@@ -591,6 +609,8 @@
     return resizedImage;
     
 }
+
+
 
 #pragma mark - TZImagePickerControllerDelegate
 - (void)imagePickerController:(TZImagePickerController *)picker didFinishPickingPhotos:(NSArray<UIImage *> *)photos sourceAssets:(NSArray *)assets isSelectOriginalPhoto:(BOOL)isSelectOriginalPhoto infos:(NSArray<NSDictionary *> *)infos {
@@ -604,8 +624,6 @@
     
     [self showWaiting];
     
-
-    
 }
 
 /// update 数据表,把插入薄中选中的照片中选中的新的照片和更新照片总数
@@ -617,7 +635,7 @@
     _selectedPhotos = [NSMutableArray arrayWithArray:photos];
     _selectedAssets = [NSMutableArray arrayWithArray:assets];
     _isSelectOriginalPhoto = isSelectOriginalPhoto;
-//    [_collectionView reloadData];
+    //    [_collectionView reloadData];
     
     NSString *imgIdentifier = @"";
     self.documentsPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) firstObject];
@@ -648,7 +666,7 @@
         if (thumbFlag) {
             lastestImagePathStr = thumPath;
         }
-
+        
         pictureObject = [[TPictureAudioObject alloc]init];
         
         [[TZImageManager manager] getOriginalPhotoWithAsset:asset completion:^(UIImage *photo, NSDictionary *info) {
@@ -672,7 +690,7 @@
                     if (self.updateAlbumCountBlock) {
                         UIImage *image = [UIImage imageWithData:thumbImageData];
                         self.updateAlbumCountBlock(self.dataArray.count, image);
-
+                        
                     }
                 }
             });
@@ -680,7 +698,7 @@
         }];
         
         
-
+        
     }
     //  update 源Album表的照片总数
     NSInteger totalPhotoCount = self.dataArray.count + _selectedPhotos.count;
@@ -688,12 +706,12 @@
     
     [self updateAlbumLastestImagePath:lastestImagePathStr];
     
-
-        dispatch_async(dispatch_get_main_queue(), ^{
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
         [self.waitingAlert hideView];
         [self showSuccess: self.albumName];
-            
-        });
+        
+    });
 }
 
 
@@ -722,19 +740,19 @@
     _selectedEditAssets = [NSMutableArray array];
     
     [UIView animateWithDuration:0.3 delay:0 options:UIViewAnimationCurveEaseIn animations:^{
-            
-            CGFloat bottomSafeArea = 0;
-            if (@available(iOS 11.0, *)) {
-                bottomSafeArea = self.view.safeAreaInsets.bottom; // 获取 Safe Area 的底部高度
-            }
-            
-            CGRect editBottomRectFrame = self.editBottomView.frame;
-            editBottomRectFrame.origin.y = self.screenHeight - EditBottomViewHeight - bottomSafeArea;
-            self.editBottomView.frame = editBottomRectFrame;
-        } completion:^(BOOL finished) {
-            
-        }];
-
+        
+        CGFloat bottomSafeArea = 0;
+        if (@available(iOS 11.0, *)) {
+            bottomSafeArea = self.view.safeAreaInsets.bottom; // 获取 Safe Area 的底部高度
+        }
+        
+        CGRect editBottomRectFrame = self.editBottomView.frame;
+        editBottomRectFrame.origin.y = self.screenHeight - EditBottomViewHeight - bottomSafeArea;
+        self.editBottomView.frame = editBottomRectFrame;
+    } completion:^(BOOL finished) {
+        
+    }];
+    
 }
 
 - (void)hideEditBottomView {
@@ -744,9 +762,9 @@
         CGRect editBottomRectFrame = self.editBottomView.frame;
         editBottomRectFrame.origin.y = self.screenHeight;
         self.editBottomView.frame = editBottomRectFrame;
-        } completion:^(BOOL finished) {
-                
-        }];
+    } completion:^(BOOL finished) {
+        
+    }];
 }
 
 /// 移至按钮事件
@@ -758,9 +776,9 @@
     [self.selectedAlbumController setModalTransitionStyle:UIModalPresentationFullScreen];
     [self.selectedAlbumController setDelegate:self];
     [self presentViewController:self.selectedAlbumController animated:YES completion:^{
-            
+        
     }];
-
+    
 }
 
 - (void)deletePictureFromAlbum:(UIButton *)sender {
@@ -771,7 +789,7 @@
         [weakself deletePictureFromAlbumConfirm];
         [weakself multiplySelectAction:nil];
     }];
-//    [self.warningAlert setShowAnimationType:SCLAlertViewShowAnimationSlideInFromCenter];
+    //    [self.warningAlert setShowAnimationType:SCLAlertViewShowAnimationSlideInFromCenter];
     [self.warningAlert showWarning:self.navigationController title:@"即将删除" subTitle:@"您确定要将这些照片或视频从相册中移除?" closeButtonTitle:@"取消" duration:0];
     
 }
@@ -820,12 +838,12 @@
 
 - (void)showSuccess:(NSString *)title andSubTitle:(NSString *)subTitle andCloseBtnTitle:(NSString *)closeTitle
 {
-
+    
     SCLAlertView *alert = [[SCLAlertView alloc] initWithNewWindow];
     alert.soundURL = [NSURL fileURLWithPath:[NSString stringWithFormat:@"%@/right_answer.mp3", [NSBundle mainBundle].resourcePath]];
-
+    
     [alert showInfo:self title:title subTitle:subTitle closeButtonTitle:closeTitle duration:0.0f];
-
+    
 }
 
 /// 转移照片 - 选择相册,并确定后,的代理方法
@@ -864,7 +882,7 @@
         }
     }
     
-
+    
     if (self.updateAlbumCountBlock) {
         
         NSString *thumbPath = [self.documentsPath stringByAppendingPathComponent:[(TPictureAudioObject *)self.dataArray.lastObject thumbPath]];
@@ -878,9 +896,9 @@
     
     [self.rightItem setTitle:@"选择"];
     [self hideEditBottomView];
-    [self.collectionView setAllowsMultipleSelection:NO];   
+    [self.collectionView setAllowsMultipleSelection:NO];
     [self showSuccess: albumName];
-
+    
 }
 
 @end
